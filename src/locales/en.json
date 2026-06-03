@@ -1,0 +1,29 @@
+{
+  "option": {
+    "home": "Home",
+    "about": "About",
+    "categories": "Categories",
+    "tutorials": "Tutorials"
+  },
+  "authoring-phrase": {
+    "intro": "Made with",
+    "use": "using",
+    "author": "by {brand} Development Team"
+  },
+  "about": {
+    "title": "About Us",
+    "content": "ACME Learning Center is an Education Business Platform, part of ACME Corporation."
+  },
+  "home": {
+    "title": "Welcome",
+    "content": "Welcome to ACME Learning Center."
+  },
+  "page-not-found": {
+    "title": "Page Not Found",
+    "content": "The path {unavailable-route} is not available.",
+    "go-home": "Go Home"
+  },
+  "errors": {
+    "occurred": "Errors occurred"
+  }
+}
