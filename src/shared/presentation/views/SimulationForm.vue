@@ -1,86 +1,54 @@
 <template>
   <div class="simulation-form">
     <div class="glass-panel">
-      <h2>Simulador Compra Inteligente</h2>
+      <h2>{{ isEditing ? 'Editar Simulación' : 'Nueva Simulación' }}</h2>
       <form @submit.prevent="submitSimulation" class="form-grid">
         
-        <div class="form-group">
-          <label>Precio del Vehículo</label>
-          <input type="number" v-model.number="form.precio_vehiculo" required />
-        </div>
-        
-        <div class="form-group">
-          <label>Cuota Inicial</label>
-          <input type="number" v-model.number="form.cuota_inicial" required />
-        </div>
-        
-        <div class="form-group">
-          <label>Cuota Final (Balloon) %</label>
-          <input type="number" v-model.number="form.cuota_final_porcentaje" required />
-        </div>
-        
+        <!-- Datos del Cliente -->
+        <h3 class="section-title">Datos del Cliente</h3>
+        <div class="form-group"><label>DNI</label><input type="text" v-model="form.cliente_dni" required /></div>
+        <div class="form-group"><label>Nombre Completo</label><input type="text" v-model="form.cliente_nombre" required /></div>
+        <div class="form-group"><label>Ingreso Mensual</label><input type="number" step="0.01" v-model.number="form.cliente_ingreso" required /></div>
+        <div class="form-group"><label>Edad</label><input type="number" v-model.number="form.cliente_edad" required /></div>
+
+        <!-- Datos del Vehículo -->
+        <h3 class="section-title">Datos del Vehículo</h3>
+        <div class="form-group"><label>Marca</label><input type="text" v-model="form.vehiculo_marca" required /></div>
+        <div class="form-group"><label>Modelo</label><input type="text" v-model="form.vehiculo_modelo" required /></div>
+        <div class="form-group"><label>Año</label><input type="number" v-model.number="form.vehiculo_anio" required /></div>
+        <div class="form-group"><label>Precio del Vehículo</label><input type="number" step="0.01" v-model.number="form.precio_vehiculo" required /></div>
+
+        <!-- Datos del Crédito -->
+        <h3 class="section-title">Datos del Crédito</h3>
+        <div class="form-group"><label>Cuota Inicial</label><input type="number" step="0.01" v-model.number="form.cuota_inicial" required /></div>
+        <div class="form-group"><label>Cuota Final (Balloon) %</label><input type="number" step="0.01" v-model.number="form.cuota_final_porcentaje" required /></div>
         <div class="form-group">
           <label>Plazo (meses)</label>
-          <select v-model.number="form.plazo_meses">
-            <option value="24">24</option>
-            <option value="36">36</option>
-          </select>
+          <select v-model.number="form.plazo_meses"><option value="24">24</option><option value="36">36</option></select>
         </div>
-
         <div class="form-group">
           <label>Tipo de Tasa</label>
-          <select v-model="form.tipo_tasa">
-            <option value="TEA">TEA</option>
-            <option value="TNA">TNA</option>
-          </select>
+          <select v-model="form.tipo_tasa"><option value="TEA">TEA</option><option value="TNA">TNA</option></select>
         </div>
-
-        <div class="form-group">
-          <label>Tasa de Interés (Ej: 0.15 para 15%)</label>
-          <input type="number" step="0.01" v-model.number="form.tasa_interes" required />
-        </div>
-
+        <div class="form-group"><label>Tasa de Interés (Ej: 0.15 para 15%)</label><input type="number" step="0.0001" v-model.number="form.tasa_interes" required /></div>
         <div class="form-group" v-if="form.tipo_tasa === 'TNA'">
           <label>Capitalización</label>
-          <select v-model="form.capitalizacion">
-            <option value="Diaria">Diaria</option>
-            <option value="Mensual">Mensual</option>
-          </select>
+          <select v-model="form.capitalizacion"><option value="Diaria">Diaria</option><option value="Mensual">Mensual</option></select>
         </div>
-
         <div class="form-group">
           <label>Tipo de Gracia</label>
-          <select v-model="form.tipo_gracia">
-            <option value="Ninguno">Ninguno</option>
-            <option value="Parcial">Parcial</option>
-            <option value="Total">Total</option>
-          </select>
+          <select v-model="form.tipo_gracia"><option value="Ninguno">Ninguno</option><option value="Parcial">Parcial</option><option value="Total">Total</option></select>
         </div>
+        <div class="form-group" v-if="form.tipo_gracia !== 'Ninguno'"><label>Periodos de Gracia</label><input type="number" v-model.number="form.periodos_gracia" /></div>
 
-        <div class="form-group" v-if="form.tipo_gracia !== 'Ninguno'">
-          <label>Periodos de Gracia</label>
-          <input type="number" v-model.number="form.periodos_gracia" />
-        </div>
-
-        <div class="form-group">
-          <label>Seguro Desgravamen (mensual)</label>
-          <input type="number" step="0.0001" v-model.number="form.seguro_desgravamen" />
-        </div>
-
-        <div class="form-group">
-          <label>Seguro Vehicular (anual)</label>
-          <input type="number" step="0.0001" v-model.number="form.seguro_vehicular_anual" />
-        </div>
-
-        <div class="form-group">
-          <label>Comisiones (Monto fijo)</label>
-          <input type="number" v-model.number="form.comisiones" />
-        </div>
+        <!-- Seguros y Comisiones -->
+        <h3 class="section-title">Seguros y Comisiones</h3>
+        <div class="form-group"><label>Seguro Desgravamen (mensual, Ej: 0.0005)</label><input type="number" step="0.00001" v-model.number="form.seguro_desgravamen" /></div>
+        <div class="form-group"><label>Seguro Vehicular (anual, Ej: 0.05)</label><input type="number" step="0.0001" v-model.number="form.seguro_vehicular_anual" /></div>
+        <div class="form-group"><label>Comisiones (Monto fijo)</label><input type="number" step="0.01" v-model.number="form.comisiones" /></div>
 
         <div class="form-actions">
-          <button type="submit" class="btn-primary" :disabled="loading">
-            {{ loading ? 'Calculando...' : 'Calcular' }}
-          </button>
+          <button type="submit" class="btn-primary" :disabled="loading">{{ loading ? 'Calculando...' : 'Calcular y Guardar' }}</button>
           <button type="button" class="btn-secondary" @click="$router.push('/dashboard')">Cancelar</button>
         </div>
       </form>
@@ -89,50 +57,70 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 
 const router = useRouter();
+const route = useRoute();
 const loading = ref(false);
+const isEditing = ref(false);
 
 const form = reactive({
-  precio_vehiculo: 20000,
-  cuota_inicial: 4000,
-  cuota_final_porcentaje: 30,
-  tipo_tasa: 'TEA',
-  tasa_interes: 0.15,
-  capitalizacion: 'Mensual',
-  plazo_meses: 36,
-  tipo_gracia: 'Ninguno',
-  periodos_gracia: 0,
-  seguro_desgravamen: 0.0005,
-  seguro_vehicular_anual: 0.05,
-  comisiones: 150
+  id: null,
+  cliente_dni: '', cliente_nombre: '', cliente_ingreso: 0, cliente_edad: 30,
+  vehiculo_marca: '', vehiculo_modelo: '', vehiculo_anio: 2024,
+  precio_vehiculo: 20000, cuota_inicial: 4000, cuota_final_porcentaje: 30,
+  tipo_tasa: 'TEA', tasa_interes: 0.15, capitalizacion: 'Mensual',
+  plazo_meses: 36, tipo_gracia: 'Ninguno', periodos_gracia: 0,
+  seguro_desgravamen: 0.0005, seguro_vehicular_anual: 0.05, comisiones: 150
+});
+
+onMounted(async () => {
+  const creditId = route.query.id;
+  if (creditId) {
+    isEditing.value = true;
+    try {
+      const res = await axios.get(`http://localhost:3000/api/credit/${creditId}`);
+      const data = res.data.data;
+      
+      form.id = data.id;
+      form.cliente_dni = data.Cliente?.dni;
+      form.cliente_nombre = data.Cliente?.nombre;
+      form.cliente_ingreso = parseFloat(data.Cliente?.ingreso_mensual);
+      form.cliente_edad = data.Cliente?.edad;
+      
+      form.vehiculo_marca = data.Vehiculo?.marca;
+      form.vehiculo_modelo = data.Vehiculo?.modelo;
+      form.vehiculo_anio = data.Vehiculo?.anio;
+      form.precio_vehiculo = parseFloat(data.Vehiculo?.precio);
+      
+      form.cuota_inicial = parseFloat(data.cuota_inicial);
+      form.cuota_final_porcentaje = parseFloat(data.cuota_final_porcentaje);
+      form.tipo_tasa = data.tipo_tasa;
+      form.tasa_interes = parseFloat(data.tasa_interes);
+      form.capitalizacion = data.capitalizacion;
+      form.plazo_meses = data.plazo_meses;
+      form.tipo_gracia = data.tipo_gracia;
+      form.periodos_gracia = data.periodos_gracia;
+      
+      form.seguro_desgravamen = parseFloat(data.CostosAdicionale?.seguro_desgravamen || 0.0005);
+      form.seguro_vehicular_anual = parseFloat(data.CostosAdicionale?.seguro_vehicular || 0.05);
+      form.comisiones = parseFloat(data.CostosAdicionale?.comisiones || 150);
+    } catch(e) {
+      console.error(e);
+    }
+  }
 });
 
 const submitSimulation = async () => {
   loading.value = true;
   try {
-    const response = await axios.post('http://localhost:3000/api/credit/simulate', form);
-    localStorage.setItem('simulationResult', JSON.stringify(response.data.data));
-    router.push('/results');
+    const headers = { userid: localStorage.getItem('userid') };
+    const response = await axios.post('http://localhost:3000/api/credit/simulate', form, { headers });
+    router.push(`/results?id=${response.data.data.id}`);
   } catch(e) {
-    console.error("Error calling simulation API, using fallback mock", e);
-    // Fallback if backend isn't responding
-    const mockData = {
-      monto_financiado: form.precio_vehiculo - form.cuota_inicial,
-      TCEA: 0.2245,
-      VAN: 1500.50,
-      cuota_mensual_referencial: 450.20,
-      cuota_final: form.precio_vehiculo * (form.cuota_final_porcentaje / 100),
-      cronograma: Array.from({length: form.plazo_meses}, (_, i) => ({
-        mes: i+1, saldo_inicial: 16000, amortizacion: 300, interes: 100,
-        seguro_desgravamen: 10, seguro_vehicular: 40, cuota: 450, saldo_final: 15700
-      }))
-    };
-    localStorage.setItem('simulationResult', JSON.stringify(mockData));
-    router.push('/results');
+    console.error("Error", e);
   } finally {
     loading.value = false;
   }
@@ -140,30 +128,9 @@ const submitSimulation = async () => {
 </script>
 
 <style scoped>
-.simulation-form {
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-}
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-.form-actions {
-  grid-column: span 2;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-.btn-secondary {
-  background: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--glass-border);
-  padding: 0.8rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-}
+.simulation-form { padding: 2rem; max-width: 800px; margin: 0 auto; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
+.section-title { grid-column: span 2; color: var(--accent-blue); margin-top: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; }
+.form-actions { grid-column: span 2; display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; }
+.btn-secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--glass-border); padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; }
 </style>

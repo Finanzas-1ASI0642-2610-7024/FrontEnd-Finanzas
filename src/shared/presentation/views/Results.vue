@@ -1,8 +1,17 @@
 <template>
   <div class="results-page">
     <div class="header-actions">
-      <h2>Resultados de Simulación</h2>
-      <button class="btn-primary" @click="$router.push('/simulate')">Nueva Simulación</button>
+      <h2>{{ isOtorgado ? 'Crédito Otorgado' : 'Resultados de Simulación' }}</h2>
+      <div>
+        <button class="btn-secondary mr" @click="$router.push('/dashboard')">Volver</button>
+        <button class="btn-primary" @click="descargarExcel" v-if="creditId">Exportar Excel</button>
+      </div>
+    </div>
+
+    <div class="info-section glass-panel mb" v-if="cliente">
+      <h3>Datos del Cliente y Vehículo</h3>
+      <p><strong>Cliente:</strong> {{ cliente.nombre }} (DNI: {{ cliente.dni }})</p>
+      <p><strong>Vehículo:</strong> {{ vehiculo.marca }} {{ vehiculo.modelo }} - ${{ Number(vehiculo.precio).toFixed(2) }}</p>
     </div>
 
     <div class="indicators grid">
@@ -40,7 +49,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in data?.cronograma" :key="row.mes">
+          <tr v-for="row in cronograma" :key="row.mes">
             <td>{{ row.mes }}</td>
             <td>{{ format(row.saldo_inicial) }}</td>
             <td>{{ format(row.amortizacion) }}</td>
@@ -58,62 +67,63 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import axios from 'axios';
 
+const route = useRoute();
 const data = ref(null);
+const cronograma = ref([]);
+const cliente = ref(null);
+const vehiculo = ref(null);
+const creditId = ref(null);
+const isOtorgado = ref(false);
 
-onMounted(() => {
-  const result = localStorage.getItem('simulationResult');
-  if (result) {
-    data.value = JSON.parse(result);
+onMounted(async () => {
+  creditId.value = route.query.id;
+  if (creditId.value) {
+    try {
+      const res = await axios.get(`http://localhost:3000/api/credit/${creditId.value}`);
+      const c = res.data.data;
+      cliente.value = c.Cliente;
+      vehiculo.value = c.Vehiculo;
+      isOtorgado.value = c.estado === 'Otorgado';
+      
+      data.value = {
+        monto_financiado: c.monto_financiado,
+        cuota_mensual_referencial: c.DatosSalida?.cuota_mensual,
+        TCEA: c.DatosSalida?.TCEA,
+        cuota_final: c.DatosSalida?.cuota_final
+      };
+      if(c.DatosSalida?.cronograma_pagos_json) {
+        cronograma.value = JSON.parse(c.DatosSalida.cronograma_pagos_json);
+      }
+    } catch(e) {
+      console.error(e);
+    }
   }
 });
 
-const format = (num) => {
-  return Number(num || 0).toFixed(2);
+const descargarExcel = () => {
+  if (creditId.value) {
+    window.open(`http://localhost:3000/api/credit/${creditId.value}/excel`, '_blank');
+  }
 };
+
+const format = (num) => Number(num || 0).toFixed(2);
 </script>
 
 <style scoped>
-.results-page {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.header-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-.indicator {
-  text-align: center;
-  padding: 1.5rem;
-}
-.indicator p {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
-}
-.indicator h3 {
-  font-size: 1.8rem;
-}
-.highlight {
-  color: var(--accent-cyan);
-}
-.highlight-purple {
-  color: #b14eff; /* Accent purple */
-}
-.table-container {
-  overflow-x: auto;
-}
-.bold-cuota {
-  color: var(--accent-cyan);
-  font-weight: 600;
-}
+.results-page { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+.header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+.indicator { text-align: center; padding: 1.5rem; }
+.indicator p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; }
+.indicator h3 { font-size: 1.8rem; }
+.highlight { color: var(--accent-cyan); }
+.highlight-purple { color: #b14eff; }
+.table-container { overflow-x: auto; }
+.bold-cuota { color: var(--accent-cyan); font-weight: 600; }
+.mb { margin-bottom: 1.5rem; padding: 1.5rem; }
+.mr { margin-right: 1rem; }
+.btn-secondary { background: transparent; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; border: 1px solid var(--glass-border); color: white; }
 </style>

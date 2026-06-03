@@ -11,7 +11,11 @@
         <label>Contraseña</label>
         <input type="password" v-model="password" placeholder="••••••••" required />
         
-        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem;">Ingresar</button>
+        <p v-if="error" class="error-msg">{{ error }}</p>
+
+        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem;">
+          {{ loading ? 'Ingresando...' : 'Ingresar' }}
+        </button>
       </form>
     </div>
   </div>
@@ -20,15 +24,36 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 const router = useRouter();
 const username = ref('');
 const password = ref('');
+const error = ref('');
+const loading = ref(false);
 
-const handleLogin = () => {
-  // Simulando login
+const handleLogin = async () => {
   if (username.value && password.value) {
-    router.push('/dashboard');
+    loading.value = true;
+    error.value = '';
+    try {
+      const res = await axios.post('http://localhost:3000/api/auth/login', {
+        username: username.value,
+        password: password.value
+      });
+      
+      if(res.data.success) {
+        localStorage.setItem('userid', res.data.user.id);
+        localStorage.setItem('role', res.data.user.rol);
+        
+        if(res.data.user.rol === 'admin') router.push('/admin');
+        else router.push('/dashboard');
+      }
+    } catch(e) {
+      error.value = 'Credenciales inválidas';
+    } finally {
+      loading.value = false;
+    }
   }
 };
 </script>
@@ -56,5 +81,11 @@ const handleLogin = () => {
 }
 form {
   text-align: left;
+}
+.error-msg {
+  color: #ff4d4f;
+  font-size: 0.9rem;
+  margin-top: -10px;
+  margin-bottom: 10px;
 }
 </style>
