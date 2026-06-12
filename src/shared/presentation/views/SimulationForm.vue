@@ -6,17 +6,23 @@
         
         <!-- Datos del Cliente -->
         <h3 class="section-title">Datos del Cliente</h3>
-        <div class="form-group"><label>DNI</label><input type="text" v-model="form.cliente_dni" required /></div>
-        <div class="form-group"><label>Nombre Completo</label><input type="text" v-model="form.cliente_nombre" required /></div>
-        <div class="form-group"><label>Ingreso Mensual</label><input type="number" step="0.01" v-model.number="form.cliente_ingreso" required /></div>
-        <div class="form-group"><label>Edad</label><input type="number" v-model.number="form.cliente_edad" required /></div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Seleccionar Cliente</label>
+          <select v-model="form.ID_Cliente" required class="select-full">
+            <option value="" disabled>-- Elige un Cliente --</option>
+            <option v-for="c in clients" :key="c.id" :value="c.id">{{ c.dni }} - {{ c.nombre }} (Ingreso: ${{ Number(c.ingreso_mensual).toFixed(2) }})</option>
+          </select>
+        </div>
 
         <!-- Datos del Vehículo -->
         <h3 class="section-title">Datos del Vehículo</h3>
-        <div class="form-group"><label>Marca</label><input type="text" v-model="form.vehiculo_marca" required /></div>
-        <div class="form-group"><label>Modelo</label><input type="text" v-model="form.vehiculo_modelo" required /></div>
-        <div class="form-group"><label>Año</label><input type="number" v-model.number="form.vehiculo_anio" required /></div>
-        <div class="form-group"><label>Precio del Vehículo</label><input type="number" step="0.01" v-model.number="form.precio_vehiculo" required /></div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Seleccionar Vehículo</label>
+          <select v-model="form.ID_Vehiculo" required class="select-full">
+            <option value="" disabled>-- Elige un Vehículo --</option>
+            <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ v.marca }} {{ v.modelo }} - {{ v.anio }} (${{ Number(v.precio).toFixed(2) }})</option>
+          </select>
+        </div>
 
         <!-- Datos del Crédito -->
         <h3 class="section-title">Datos del Crédito</h3>
@@ -40,6 +46,9 @@
           <select v-model="form.tipo_gracia"><option value="Ninguno">Ninguno</option><option value="Parcial">Parcial</option><option value="Total">Total</option></select>
         </div>
         <div class="form-group" v-if="form.tipo_gracia !== 'Ninguno'"><label>Periodos de Gracia</label><input type="number" v-model.number="form.periodos_gracia" /></div>
+        
+        <h3 class="section-title">Parámetros de Evaluación Financiera</h3>
+        <div class="form-group"><label>Tasa de Descuento (COK) Ej: 0.10</label><input type="number" step="0.0001" v-model.number="form.tasa_descuento_COK" required /></div>
 
         <!-- Seguros y Comisiones -->
         <h3 class="section-title">Seguros y Comisiones</h3>
@@ -65,18 +74,29 @@ const router = useRouter();
 const route = useRoute();
 const loading = ref(false);
 const isEditing = ref(false);
+const clients = ref([]);
+const vehicles = ref([]);
 
 const form = reactive({
   id: null,
-  cliente_dni: '', cliente_nombre: '', cliente_ingreso: 0, cliente_edad: 30,
-  vehiculo_marca: '', vehiculo_modelo: '', vehiculo_anio: 2024,
-  precio_vehiculo: 20000, cuota_inicial: 4000, cuota_final_porcentaje: 30,
+  ID_Cliente: '', ID_Vehiculo: '',
+  cuota_inicial: 4000, cuota_final_porcentaje: 30,
   tipo_tasa: 'TEA', tasa_interes: 0.15, capitalizacion: 'Mensual',
   plazo_meses: 36, tipo_gracia: 'Ninguno', periodos_gracia: 0,
-  seguro_desgravamen: 0.0005, seguro_vehicular_anual: 0.05, comisiones: 150
+  seguro_desgravamen: 0.0005, seguro_vehicular_anual: 0.05, comisiones: 150,
+  tasa_descuento_COK: 0.10
 });
 
 onMounted(async () => {
+  try {
+    const [clientsRes, vehiclesRes] = await Promise.all([
+      axios.get('http://localhost:3000/api/clients'),
+      axios.get('http://localhost:3000/api/vehicles')
+    ]);
+    clients.value = clientsRes.data.data;
+    vehicles.value = vehiclesRes.data.data;
+  } catch(e) { console.error('Error fetching catalogs', e); }
+
   const creditId = route.query.id;
   if (creditId) {
     isEditing.value = true;
@@ -85,15 +105,8 @@ onMounted(async () => {
       const data = res.data.data;
       
       form.id = data.id;
-      form.cliente_dni = data.Cliente?.dni;
-      form.cliente_nombre = data.Cliente?.nombre;
-      form.cliente_ingreso = parseFloat(data.Cliente?.ingreso_mensual);
-      form.cliente_edad = data.Cliente?.edad;
-      
-      form.vehiculo_marca = data.Vehiculo?.marca;
-      form.vehiculo_modelo = data.Vehiculo?.modelo;
-      form.vehiculo_anio = data.Vehiculo?.anio;
-      form.precio_vehiculo = parseFloat(data.Vehiculo?.precio);
+      form.ID_Cliente = data.Cliente?.id || '';
+      form.ID_Vehiculo = data.Vehiculo?.id || '';
       
       form.cuota_inicial = parseFloat(data.cuota_inicial);
       form.cuota_final_porcentaje = parseFloat(data.cuota_final_porcentaje);
@@ -133,4 +146,5 @@ const submitSimulation = async () => {
 .section-title { grid-column: span 2; color: var(--accent-blue); margin-top: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; }
 .form-actions { grid-column: span 2; display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; }
 .btn-secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--glass-border); padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; }
+.select-full { width: 100%; padding: 0.8rem; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; color: white; }
 </style>

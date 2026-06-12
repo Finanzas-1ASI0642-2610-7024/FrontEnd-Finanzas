@@ -4,6 +4,8 @@ import DashboardView from './shared/presentation/views/Dashboard.vue'
 import AdminDashboardView from './shared/presentation/views/AdminDashboard.vue'
 import SimulationFormView from './shared/presentation/views/SimulationForm.vue'
 import ResultsView from './shared/presentation/views/Results.vue'
+import ClientsView from './shared/presentation/views/Clients.vue'
+import VehiclesView from './shared/presentation/views/Vehicles.vue'
 import PageNotFoundView from './shared/presentation/views/page-not-found.vue'
 
 const routes = [
@@ -13,6 +15,8 @@ const routes = [
     { path: '/admin', name: 'admin', component: AdminDashboardView },
     { path: '/simulate', name: 'simulate', component: SimulationFormView },
     { path: '/results', name: 'results', component: ResultsView },
+    { path: '/clients', name: 'clients', component: ClientsView },
+    { path: '/vehicles', name: 'vehicles', component: VehiclesView },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: PageNotFoundView }
 ]
 

@@ -4,6 +4,8 @@
       <h2>Panel del Asesor</h2>
       <div class="actions">
         <button class="btn-primary mr" @click="$router.push('/simulate')">Nueva Simulación</button>
+        <button class="btn-secondary mr" @click="$router.push('/clients')">Clientes</button>
+        <button class="btn-secondary mr" @click="$router.push('/vehicles')">Vehículos</button>
         <button class="btn-secondary" @click="logout">Salir</button>
       </div>
     </header>

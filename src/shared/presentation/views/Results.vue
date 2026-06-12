@@ -9,9 +9,19 @@
     </div>
 
     <div class="info-section glass-panel mb" v-if="cliente">
-      <h3>Datos del Cliente y Vehículo</h3>
-      <p><strong>Cliente:</strong> {{ cliente.nombre }} (DNI: {{ cliente.dni }})</p>
-      <p><strong>Vehículo:</strong> {{ vehiculo.marca }} {{ vehiculo.modelo }} - ${{ Number(vehiculo.precio).toFixed(2) }}</p>
+      <div class="info-grid">
+        <div>
+          <h3>Datos del Cliente</h3>
+          <p><strong>Nombre:</strong> {{ cliente.nombre }} (DNI: {{ cliente.dni }})</p>
+          <p><strong>Dirección:</strong> {{ cliente.direccion || 'N/A' }}</p>
+          <br>
+          <h3>Datos del Vehículo</h3>
+          <p><strong>Modelo:</strong> {{ vehiculo.marca }} {{ vehiculo.modelo }} - ${{ Number(vehiculo.precio).toFixed(2) }}</p>
+        </div>
+        <div v-if="vehiculo.imagen" class="photo-container">
+          <img :src="vehiculo.imagen" alt="Foto del vehículo" class="car-photo" />
+        </div>
+      </div>
     </div>
 
     <div class="indicators grid">
@@ -22,6 +32,10 @@
       <div class="glass-panel indicator">
         <p>Cuota Referencial</p>
         <h3 class="highlight">${{ format(data?.cuota_mensual_referencial) }}</h3>
+      </div>
+      <div class="glass-panel indicator">
+        <p>VAN</p>
+        <h3 class="highlight-green">${{ format(data?.VAN) }}</h3>
       </div>
       <div class="glass-panel indicator">
         <p>TCEA</p>
@@ -92,6 +106,7 @@ onMounted(async () => {
         monto_financiado: c.monto_financiado,
         cuota_mensual_referencial: c.DatosSalida?.cuota_mensual,
         TCEA: c.DatosSalida?.TCEA,
+        VAN: c.DatosSalida?.VAN,
         cuota_final: c.DatosSalida?.cuota_final
       };
       if(c.DatosSalida?.cronograma_pagos_json) {
@@ -121,9 +136,13 @@ const format = (num) => Number(num || 0).toFixed(2);
 .indicator h3 { font-size: 1.8rem; }
 .highlight { color: var(--accent-cyan); }
 .highlight-purple { color: #b14eff; }
+.highlight-green { color: #52c41a; }
 .table-container { overflow-x: auto; }
 .bold-cuota { color: var(--accent-cyan); font-weight: 600; }
 .mb { margin-bottom: 1.5rem; padding: 1.5rem; }
 .mr { margin-right: 1rem; }
 .btn-secondary { background: transparent; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; border: 1px solid var(--glass-border); color: white; }
+.info-grid { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.photo-container { width: 250px; height: 150px; overflow: hidden; border-radius: 8px; border: 1px solid var(--glass-border); }
+.car-photo { width: 100%; height: 100%; object-fit: cover; }
 </style>
