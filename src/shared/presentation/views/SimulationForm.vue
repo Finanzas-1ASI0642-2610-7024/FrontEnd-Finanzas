@@ -1,7 +1,12 @@
 <template>
   <div class="simulation-form">
+    <div class="header-actions">
+      <div>
+        <button class="btn-secondary" @click="$router.push('/dashboard')" style="margin-right: 1rem;">← Volver</button>
+        <h2 style="display: inline-block;">{{ isEditing ? 'Editar Simulación' : 'Nueva Simulación' }}</h2>
+      </div>
+    </div>
     <div class="glass-panel">
-      <h2>{{ isEditing ? 'Editar Simulación' : 'Nueva Simulación' }}</h2>
       <form @submit.prevent="submitSimulation" class="form-grid">
         
         <!-- Datos del Cliente -->
@@ -10,7 +15,7 @@
           <label>Seleccionar Cliente</label>
           <select v-model="form.ID_Cliente" required class="select-full">
             <option value="" disabled>-- Elige un Cliente --</option>
-            <option v-for="c in clients" :key="c.id" :value="c.id">{{ c.dni }} - {{ c.nombre }} (Ingreso: ${{ Number(c.ingreso_mensual).toFixed(2) }})</option>
+            <option v-for="c in clients" :key="c.id" :value="c.id">{{ c.dni }} - {{ c.nombre }} {{ c.apellido }} (Ingreso: {{ form.tipo_moneda === 'USD' ? '$' : 'S/' }}{{ Number(c.ingreso_mensual).toFixed(2) }})</option>
           </select>
         </div>
 
@@ -20,13 +25,21 @@
           <label>Seleccionar Vehículo</label>
           <select v-model="form.ID_Vehiculo" required class="select-full">
             <option value="" disabled>-- Elige un Vehículo --</option>
-            <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ v.marca }} {{ v.modelo }} - {{ v.anio }} (${{ Number(v.precio).toFixed(2) }})</option>
+            <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ v.marca }} {{ v.modelo }} - {{ v.anio }} ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }}{{ Number(v.precio).toFixed(2) }})</option>
           </select>
         </div>
 
         <!-- Datos del Crédito -->
+        <!-- Datos del Crédito -->
         <h3 class="section-title">Datos del Crédito</h3>
-        <div class="form-group"><label>Cuota Inicial</label><input type="number" step="0.01" v-model.number="form.cuota_inicial" required /></div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Moneda del Crédito</label>
+          <select v-model="form.tipo_moneda" class="select-full">
+            <option value="PEN">Soles (S/)</option>
+            <option value="USD">Dólares ($)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Cuota Inicial ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.cuota_inicial" required /></div>
         <div class="form-group"><label>Cuota Final (Balloon) %</label><input type="number" step="0.01" v-model.number="form.cuota_final_porcentaje" required /></div>
         <div class="form-group">
           <label>Plazo (meses)</label>
@@ -52,9 +65,10 @@
 
         <!-- Seguros y Comisiones -->
         <h3 class="section-title">Seguros y Comisiones</h3>
+        <h3 class="section-title">Seguros y Comisiones</h3>
         <div class="form-group"><label>Seguro Desgravamen (mensual, Ej: 0.0005)</label><input type="number" step="0.00001" v-model.number="form.seguro_desgravamen" /></div>
         <div class="form-group"><label>Seguro Vehicular (anual, Ej: 0.05)</label><input type="number" step="0.0001" v-model.number="form.seguro_vehicular_anual" /></div>
-        <div class="form-group"><label>Comisiones (Monto fijo)</label><input type="number" step="0.01" v-model.number="form.comisiones" /></div>
+        <div class="form-group"><label>Comisiones (Monto fijo en {{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.comisiones" /></div>
 
         <div class="form-actions">
           <button type="submit" class="btn-primary" :disabled="loading">{{ loading ? 'Calculando...' : 'Calcular y Guardar' }}</button>
@@ -80,6 +94,7 @@ const vehicles = ref([]);
 const form = reactive({
   id: null,
   ID_Cliente: '', ID_Vehiculo: '',
+  tipo_moneda: 'PEN',
   cuota_inicial: 4000, cuota_final_porcentaje: 30,
   tipo_tasa: 'TEA', tasa_interes: 0.15, capitalizacion: 'Mensual',
   plazo_meses: 36, tipo_gracia: 'Ninguno', periodos_gracia: 0,
@@ -110,6 +125,7 @@ onMounted(async () => {
       
       form.cuota_inicial = parseFloat(data.cuota_inicial);
       form.cuota_final_porcentaje = parseFloat(data.cuota_final_porcentaje);
+      form.tipo_moneda = data.tipo_moneda || 'PEN';
       form.tipo_tasa = data.tipo_tasa;
       form.tasa_interes = parseFloat(data.tasa_interes);
       form.capitalizacion = data.capitalizacion;
@@ -142,6 +158,7 @@ const submitSimulation = async () => {
 
 <style scoped>
 .simulation-form { padding: 2rem; max-width: 800px; margin: 0 auto; }
+.header-actions { margin-bottom: 2rem; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
 .section-title { grid-column: span 2; color: var(--accent-blue); margin-top: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; }
 .form-actions { grid-column: span 2; display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; }

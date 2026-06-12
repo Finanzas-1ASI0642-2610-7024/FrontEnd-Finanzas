@@ -1,7 +1,10 @@
 <template>
   <div class="clients-page">
     <div class="header-actions">
-      <h2>Directorio de Clientes</h2>
+      <div>
+        <button class="btn-secondary" @click="$router.push('/dashboard')" style="margin-right: 1rem;">← Volver</button>
+        <h2 style="display: inline-block;">Directorio de Clientes</h2>
+      </div>
       <button class="btn-primary" @click="openModal()">+ Nuevo Cliente</button>
     </div>
 
@@ -11,6 +14,7 @@
           <tr>
             <th>DNI</th>
             <th>Nombre Completo</th>
+            <th>Celular</th>
             <th>Dirección</th>
             <th>Edad</th>
             <th>Ingreso Mensual</th>
@@ -20,7 +24,8 @@
         <tbody>
           <tr v-for="c in clients" :key="c.id">
             <td>{{ c.dni }}</td>
-            <td>{{ c.nombre }}</td>
+            <td>{{ c.nombre }} {{ c.apellido }}</td>
+            <td>{{ c.celular || 'N/A' }}</td>
             <td>{{ c.direccion || 'N/A' }}</td>
             <td>{{ c.edad }}</td>
             <td>${{ Number(c.ingreso_mensual).toFixed(2) }}</td>
@@ -42,8 +47,31 @@
         <h3>{{ form.id ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
         <form @submit.prevent="saveClient" class="form-grid">
           <div class="form-group"><label>DNI</label><input type="text" v-model="form.dni" required maxlength="8"/></div>
-          <div class="form-group"><label>Nombre</label><input type="text" v-model="form.nombre" required /></div>
+          <div class="form-group"><label>Celular</label><input type="text" v-model="form.celular" /></div>
+          
+          <div class="form-group"><label>Nombres</label><input type="text" v-model="form.nombre" required /></div>
+          <div class="form-group"><label>Apellidos</label><input type="text" v-model="form.apellido" required /></div>
+          
           <div class="form-group" style="grid-column: span 2;"><label>Dirección</label><input type="text" v-model="form.direccion" /></div>
+          
+          <div class="form-group"><label>Ocupación</label><input type="text" v-model="form.ocupacion" /></div>
+          <div class="form-group">
+            <label>Género</label>
+            <select v-model="form.genero" class="select-full">
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Estado Civil</label>
+            <select v-model="form.estado_civil" class="select-full">
+              <option value="Soltero">Soltero</option>
+              <option value="Casado">Casado</option>
+              <option value="Viudo">Viudo</option>
+              <option value="Divorciado">Divorciado</option>
+            </select>
+          </div>
           <div class="form-group"><label>Edad</label><input type="number" v-model.number="form.edad" required /></div>
           <div class="form-group"><label>Ingreso Mensual ($)</label><input type="number" step="0.01" v-model.number="form.ingreso_mensual" required /></div>
           
@@ -59,11 +87,17 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 
+const router = useRouter();
 const clients = ref([]);
 const showModal = ref(false);
-const form = reactive({ id: null, dni: '', nombre: '', direccion: '', edad: 30, ingreso_mensual: 0 });
+const form = reactive({ 
+  id: null, dni: '', nombre: '', apellido: '', direccion: '', 
+  ocupacion: '', genero: 'Masculino', celular: '', estado_civil: 'Soltero',
+  edad: 30, ingreso_mensual: 0 
+});
 
 const fetchClients = async () => {
   try {
@@ -78,7 +112,11 @@ const openModal = (client = null) => {
   if(client) {
     Object.assign(form, client);
   } else {
-    Object.assign(form, { id: null, dni: '', nombre: '', direccion: '', edad: 30, ingreso_mensual: 0 });
+    Object.assign(form, { 
+      id: null, dni: '', nombre: '', apellido: '', direccion: '', 
+      ocupacion: '', genero: 'Masculino', celular: '', estado_civil: 'Soltero',
+      edad: 30, ingreso_mensual: 0 
+    });
   }
   showModal.value = true;
 };
@@ -118,4 +156,6 @@ const deleteClient = async (id) => {
 .modal { width: 100%; max-width: 500px; padding: 2rem; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
 .form-actions { grid-column: span 2; display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
+.btn-secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--glass-border); padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; }
+.select-full { width: 100%; padding: 0.8rem; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; color: white; }
 </style>

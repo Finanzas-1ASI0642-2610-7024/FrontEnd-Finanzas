@@ -12,11 +12,14 @@
       <div class="info-grid">
         <div>
           <h3>Datos del Cliente</h3>
-          <p><strong>Nombre:</strong> {{ cliente.nombre }} (DNI: {{ cliente.dni }})</p>
+          <p><strong>Nombres:</strong> {{ cliente.nombre }} {{ cliente.apellido }} (DNI: {{ cliente.dni }})</p>
+          <p><strong>Celular:</strong> {{ cliente.celular || 'N/A' }} | <strong>Ocupación:</strong> {{ cliente.ocupacion || 'N/A' }}</p>
           <p><strong>Dirección:</strong> {{ cliente.direccion || 'N/A' }}</p>
           <br>
           <h3>Datos del Vehículo</h3>
-          <p><strong>Modelo:</strong> {{ vehiculo.marca }} {{ vehiculo.modelo }} - ${{ Number(vehiculo.precio).toFixed(2) }}</p>
+          <p><strong>Modelo:</strong> {{ vehiculo.marca }} {{ vehiculo.modelo }} ({{ vehiculo.estado }})</p>
+          <p><strong>N° Serie:</strong> {{ vehiculo.numero_serie }} | <strong>Kilometraje:</strong> {{ vehiculo.kilometraje }} km</p>
+          <p><strong>Precio:</strong> {{ moneda }}{{ Number(vehiculo.precio).toFixed(2) }}</p>
         </div>
         <div v-if="vehiculo.imagen" class="photo-container">
           <img :src="vehiculo.imagen" alt="Foto del vehículo" class="car-photo" />
@@ -27,15 +30,15 @@
     <div class="indicators grid">
       <div class="glass-panel indicator">
         <p>Monto Financiado</p>
-        <h3>${{ format(data?.monto_financiado) }}</h3>
+        <h3>{{ moneda }}{{ format(data?.monto_financiado) }}</h3>
       </div>
       <div class="glass-panel indicator">
         <p>Cuota Referencial</p>
-        <h3 class="highlight">${{ format(data?.cuota_mensual_referencial) }}</h3>
+        <h3 class="highlight">{{ moneda }}{{ format(data?.cuota_mensual_referencial) }}</h3>
       </div>
       <div class="glass-panel indicator">
         <p>VAN</p>
-        <h3 class="highlight-green">${{ format(data?.VAN) }}</h3>
+        <h3 class="highlight-green">{{ moneda }}{{ format(data?.VAN) }}</h3>
       </div>
       <div class="glass-panel indicator">
         <p>TCEA</p>
@@ -43,7 +46,7 @@
       </div>
       <div class="glass-panel indicator">
         <p>Cuota Final (Balloon)</p>
-        <h3>${{ format(data?.cuota_final) }}</h3>
+        <h3>{{ moneda }}{{ format(data?.cuota_final) }}</h3>
       </div>
     </div>
 
@@ -91,6 +94,7 @@ const cliente = ref(null);
 const vehiculo = ref(null);
 const creditId = ref(null);
 const isOtorgado = ref(false);
+const moneda = ref('S/');
 
 onMounted(async () => {
   creditId.value = route.query.id;
@@ -101,6 +105,7 @@ onMounted(async () => {
       cliente.value = c.Cliente;
       vehiculo.value = c.Vehiculo;
       isOtorgado.value = c.estado === 'Otorgado';
+      moneda.value = c.tipo_moneda === 'USD' ? '$' : 'S/';
       
       data.value = {
         monto_financiado: c.monto_financiado,

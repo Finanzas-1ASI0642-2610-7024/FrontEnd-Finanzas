@@ -1,7 +1,10 @@
 <template>
   <div class="vehicles-page">
     <div class="header-actions">
-      <h2>Catálogo de Vehículos</h2>
+      <div>
+        <button class="btn-secondary" @click="$router.push('/dashboard')" style="margin-right: 1rem;">← Volver</button>
+        <h2 style="display: inline-block;">Catálogo de Vehículos</h2>
+      </div>
       <button class="btn-primary" @click="openModal()">+ Nuevo Vehículo</button>
     </div>
 
@@ -12,6 +15,8 @@
             <th>Foto</th>
             <th>Marca</th>
             <th>Modelo</th>
+            <th>Estado</th>
+            <th>Kilometraje</th>
             <th>Año</th>
             <th>Precio</th>
             <th>Acciones</th>
@@ -25,6 +30,8 @@
             </td>
             <td>{{ v.marca }}</td>
             <td>{{ v.modelo }}</td>
+            <td>{{ v.estado }}</td>
+            <td>{{ v.kilometraje }} km</td>
             <td>{{ v.anio }}</td>
             <td>${{ Number(v.precio).toFixed(2) }}</td>
             <td>
@@ -46,6 +53,18 @@
         <form @submit.prevent="saveVehicle" class="form-grid">
           <div class="form-group"><label>Marca</label><input type="text" v-model="form.marca" required /></div>
           <div class="form-group"><label>Modelo</label><input type="text" v-model="form.modelo" required /></div>
+          
+          <div class="form-group">
+            <label>Estado</label>
+            <select v-model="form.estado" class="select-full">
+              <option value="Nuevo">Nuevo</option>
+              <option value="Seminuevo">Seminuevo</option>
+              <option value="Usado">Usado</option>
+            </select>
+          </div>
+          <div class="form-group"><label>N° Serie</label><input type="text" v-model="form.numero_serie" required /></div>
+          
+          <div class="form-group"><label>Kilometraje</label><input type="number" v-model.number="form.kilometraje" required /></div>
           <div class="form-group"><label>Año</label><input type="number" v-model.number="form.anio" required /></div>
           <div class="form-group"><label>Precio ($)</label><input type="number" step="0.01" v-model.number="form.precio" required /></div>
           
@@ -67,12 +86,17 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 
+const router = useRouter();
 const vehicles = ref([]);
 const showModal = ref(false);
 const uploading = ref(false);
-const form = reactive({ id: null, marca: '', modelo: '', anio: 2024, precio: 0, imagen: '' });
+const form = reactive({ 
+  id: null, marca: '', modelo: '', anio: 2024, precio: 0, 
+  estado: 'Nuevo', numero_serie: '', kilometraje: 0, imagen: '' 
+});
 
 const fetchVehicles = async () => {
   try {
@@ -87,7 +111,10 @@ const openModal = (vehicle = null) => {
   if(vehicle) {
     Object.assign(form, vehicle);
   } else {
-    Object.assign(form, { id: null, marca: '', modelo: '', anio: 2024, precio: 0, imagen: '' });
+    Object.assign(form, { 
+      id: null, marca: '', modelo: '', anio: 2024, precio: 0, 
+      estado: 'Nuevo', numero_serie: '', kilometraje: 0, imagen: '' 
+    });
   }
   showModal.value = true;
 };
@@ -144,4 +171,6 @@ const deleteVehicle = async (id) => {
 .modal { width: 100%; max-width: 500px; padding: 2rem; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
 .form-actions { grid-column: span 2; display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
+.btn-secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--glass-border); padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; }
+.select-full { width: 100%; padding: 0.8rem; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; color: white; }
 </style>
