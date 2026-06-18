@@ -102,8 +102,11 @@
             <th>Interés</th>
             <th>Desgravamen</th>
             <th>S. Vehicular</th>
-            <th>Cuota</th>
+            <th>Portes / G. Adm.</th>
+            <th>Comisiones</th>
+            <th>Cuota Total</th>
             <th>Saldo Final</th>
+            <th>Flujo de Caja</th>
           </tr>
         </thead>
         <tbody>
@@ -114,8 +117,11 @@
             <td>{{ format(row.interes) }}</td>
             <td>{{ format(row.seguro_desgravamen) }}</td>
             <td>{{ format(row.seguro_vehicular) }}</td>
+            <td>{{ format(row.portes) }}</td>
+            <td>{{ format(row.comisiones) }}</td>
             <td class="bold-cuota">{{ format(row.cuota) }}</td>
             <td>{{ format(row.saldo_final) }}</td>
+            <td :class="row.flujo_caja >= 0 ? 'text-green' : 'text-red'"><strong>{{ format(row.flujo_caja) }}</strong></td>
           </tr>
         </tbody>
       </table>
@@ -234,7 +240,9 @@ const format = (num) => Number(num || 0).toFixed(2);
 .highlight-purple { color: #b14eff; }
 .highlight-green { color: #52c41a; }
 .text-red { color: #ff4d4f; }
-.table-container { overflow-x: auto; }
+.text-green { color: #52c41a; }
+.table-container { overflow-x: auto; width: 100%; }
+.table-container table { width: 100%; white-space: nowrap; }
 .bold-cuota { color: var(--accent-cyan); font-weight: 600; }
 .mb { margin-bottom: 1.5rem; padding: 1.5rem; }
 .mr { margin-right: 1rem; }
