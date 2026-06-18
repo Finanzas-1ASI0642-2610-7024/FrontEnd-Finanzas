@@ -51,9 +51,15 @@
             <option value="USD">Dólares ($)</option>
           </select>
         </div>
-        <div class="form-group"><label>Tipo de Cambio</label><input type="number" step="0.0001" v-model.number="form.tipo_cambio" required /></div>
-        <div class="form-group" style="grid-column: span 2;">
-            <small class="text-secondary">El precio del vehículo será convertido a la moneda del crédito usando el Tipo de Cambio indicado (Ej. 3.45 o 1.00 si no aplica).</small>
+        <div class="form-group" v-if="needsExchangeRate">
+          <label>Tipo de Cambio ({{ monedaVehiculo === 'USD' ? 'USD → PEN' : 'PEN → USD' }})</label>
+          <input type="number" step="0.0001" v-model.number="form.tipo_cambio" required />
+        </div>
+        <div class="form-group" style="grid-column: span 2;" v-if="needsExchangeRate">
+            <small class="text-secondary">⚠️ El vehículo está registrado en {{ monedaVehiculo === 'USD' ? 'Dólares ($)' : 'Soles (S/)' }} pero el crédito es en {{ form.tipo_moneda === 'USD' ? 'Dólares ($)' : 'Soles (S/)' }}. Ingresa el tipo de cambio para la conversión.</small>
+        </div>
+        <div class="form-group" style="grid-column: span 2;" v-if="form.ID_Vehiculo && !needsExchangeRate">
+            <small class="text-secondary" style="color: #52c41a;">✅ El vehículo y el crédito están en la misma moneda ({{ form.tipo_moneda === 'USD' ? 'Dólares $' : 'Soles S/' }}). No se necesita tipo de cambio.</small>
         </div>
         
         <div class="form-group"><label>% Cuota Inicial (Ej: 20)</label><input type="number" step="0.01" v-model.number="form.cuota_inicial_porcentaje" required /></div>
@@ -124,7 +130,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 
@@ -136,10 +142,19 @@ const currentStep = ref(1);
 const clients = ref([]);
 const vehicles = ref([]);
 
+// Computed: vehículo seleccionado y lógica de tipo de cambio
+const selectedVehicle = computed(() => vehicles.value.find(v => v.id === form.ID_Vehiculo));
+const monedaVehiculo = computed(() => selectedVehicle.value?.moneda || 'PEN');
+const needsExchangeRate = computed(() => {
+  if (!form.ID_Vehiculo) return false;
+  return monedaVehiculo.value !== form.tipo_moneda;
+});
+const simboloMoneda = computed(() => form.tipo_moneda === 'USD' ? '$' : 'S/');
+
 const form = reactive({
   id: null,
   ID_Cliente: '', ID_Vehiculo: '',
-  tipo_moneda: 'PEN', tipo_cambio: 3.4500,
+  tipo_moneda: 'PEN', tipo_cambio: 1,
   cuota_inicial_porcentaje: 20, cuota_final_porcentaje: 30,
   tipo_tasa: 'TEA', tasa_interes: 15, capitalizacion: 'Mensual', // Natural percentage
   numero_anios: 1, frecuencia_pago_dias: 30, dias_por_anio: 360,
@@ -197,6 +212,18 @@ onMounted(async () => {
       form.tasa_descuento_COK = (parseFloat(data.tasa_descuento_COK) || 0) * 100; // API to Form (Natural)
     } catch(e) {
       console.error(e);
+    }
+  }
+});
+
+// Watcher: auto-ajustar tipo de cambio cuando no se necesita conversión
+watch([() => form.tipo_moneda, () => form.ID_Vehiculo], () => {
+  if (!needsExchangeRate.value) {
+    form.tipo_cambio = 1;
+  } else {
+    // Sugerir tipo de cambio por defecto cuando se necesita conversión
+    if (form.tipo_cambio === 1) {
+      form.tipo_cambio = 3.4500;
     }
   }
 });
