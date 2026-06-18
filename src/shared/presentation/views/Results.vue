@@ -5,10 +5,13 @@
       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
         <button class="btn-secondary" @click="$router.push('/dashboard')">Volver al Inicio</button>
         <button class="btn-secondary" @click="$router.push(`/simulate?id=${creditId}`)" v-if="creditId && !isOtorgado">
-          <i class="fas fa-edit"></i> Editar Simulación
+          <i class="fas fa-edit"></i> Editar
         </button>
         <button class="btn-primary" @click="descargarExcel" v-if="creditId">
-          <i class="fas fa-file-excel"></i> Exportar a Excel
+          <i class="fas fa-file-excel"></i> Exportar
+        </button>
+        <button class="btn-success" @click="guardarSimulacion" v-if="creditId && !isOtorgado">
+          <i class="fas fa-save"></i> Guardar Simulación
         </button>
       </div>
     </div>
@@ -212,6 +215,11 @@ const descargarExcel = () => {
   }
 };
 
+const guardarSimulacion = () => {
+  alert('¡La simulación ha sido guardada en tu historial exitosamente!');
+  router.push('/dashboard');
+};
+
 const format = (num) => Number(num || 0).toFixed(2);
 </script>
 
@@ -231,6 +239,8 @@ const format = (num) => Number(num || 0).toFixed(2);
 .mb { margin-bottom: 1.5rem; padding: 1.5rem; }
 .mr { margin-right: 1rem; }
 .btn-secondary { background: transparent; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; border: 1px solid var(--glass-border); color: white; }
+.btn-success { background: #52c41a; color: white; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; border: none; font-weight: bold; }
+.btn-success:hover { background: #389e0d; }
 .info-grid { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .photo-container { width: 250px; height: 150px; overflow: hidden; border-radius: 8px; border: 1px solid var(--glass-border); }
 .car-photo { width: 100%; height: 100%; object-fit: cover; }
