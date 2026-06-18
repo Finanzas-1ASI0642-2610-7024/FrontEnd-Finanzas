@@ -26,50 +26,53 @@
           <p><strong>Comisiones (Estudio/Activación):</strong> {{ moneda }}{{ format(comision_estudio + comision_activacion) }}</p>
         </div>
         <div v-if="vehiculo.imagen" class="photo-container">
-          <div class="result-card" v-if="data">
-        <h2 class="text-center mb-4"><i class="fas fa-chart-line"></i> Resumen de la Simulación</h2>
-
-        <!-- Agrupación 1: Del financiamiento -->
-        <h3 class="section-title">... del financiamiento</h3>
-        <div class="grid-2 gap-4">
-          <div class="result-item"><span>Saldo a financiar</span><span class="value">{{ moneda }}{{ format(data.monto_financiado) }}</span></div>
-          <div class="result-item"><span>Monto del préstamo</span><span class="value">{{ moneda }}{{ format(data.monto_del_prestamo) }}</span></div>
-          <div class="result-item"><span>N° Cuotas por Año</span><span class="value">{{ format(data.dias_por_anio / data.frecuencia_pago_dias) }}</span></div>
-          <div class="result-item"><span>N° Total de Cuotas</span><span class="value">{{ data.cronograma.length }}</span></div>
-        </div>
-
-        <!-- Agrupación 2: De los costes/gastos periódicos -->
-        <h3 class="section-title mt-4">... de los costes/gastos periódicos</h3>
-        <div class="grid-2 gap-4">
-          <div class="result-item"><span>% Seguro desgravamen per.</span><span class="value">{{ format(data.seguro_desgravamen * 100) }}%</span></div>
-          <div class="result-item"><span>Seguro riesgo</span><span class="value">{{ moneda }}{{ format(data.seguro_vehicular_periodo) }}</span></div>
-        </div>
-
-        <!-- Agrupación 3: Totales -->
-        <h3 class="section-title mt-4">... totales por ...</h3>
-        <div class="grid-2 gap-4">
-          <div class="result-item"><span>Intereses</span><span class="value">{{ moneda }}{{ format(data.totales?.interes) }}</span></div>
-          <div class="result-item"><span>Amortización del capital</span><span class="value">{{ moneda }}{{ format(data.totales?.amortizacion) }}</span></div>
-          <div class="result-item"><span>Seguro de desgravamen</span><span class="value">{{ moneda }}{{ format(data.totales?.seguro_desgravamen) }}</span></div>
-          <div class="result-item"><span>Seguro contra todo riesgo</span><span class="value">{{ moneda }}{{ format(data.totales?.seguro_vehicular) }}</span></div>
-          <div class="result-item"><span>Comisiones periódicas</span><span class="value">{{ moneda }}{{ format(data.totales?.comisiones) }}</span></div>
-          <div class="result-item"><span>Portes / Gastos de adm.</span><span class="value">{{ moneda }}{{ format(data.totales?.portes_gastos) }}</span></div>
-        </div>
-
-        <!-- Agrupación 4: Indicadores de Rentabilidad -->
-        <h3 class="section-title mt-4">... de Indicadores de Rentabilidad</h3>
-        <div class="grid-2 gap-4">
-          <div class="result-item highlight"><span>Tasa de descuento</span><span class="value">{{ format(data.TEP_COK * 100) }}%</span></div>
-          <div class="result-item highlight"><span>TIR de la operación</span><span class="value">{{ format(data.TIR_periodo * 100) }}%</span></div>
-          <div class="result-item highlight"><span>TCEA de la operación</span><span class="value">{{ format(data.TCEA * 100) }}%</span></div>
-          <div class="result-item highlight"><span>VAN operación</span><span class="value">{{ moneda }}{{ format(data.VAN) }}</span></div>
-        </div>
-
-        <div class="mt-4 text-center">
-          <button class="btn-primary" @click="exportar"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
+          <img :src="vehiculo.imagen" alt="Foto del vehículo" class="car-photo" />
         </div>
       </div>
     </div>
+
+    <div class="result-card" v-if="data">
+      <h2 class="text-center mb-4"><i class="fas fa-chart-line"></i> Resumen de la Simulación</h2>
+
+      <!-- Agrupación 1: Del financiamiento -->
+      <h3 class="section-title">... del financiamiento</h3>
+      <div class="grid-2 gap-4">
+        <div class="result-item"><span>Saldo a financiar</span><span class="value">{{ moneda }}{{ format(data.monto_financiado) }}</span></div>
+        <div class="result-item"><span>Monto del préstamo</span><span class="value">{{ moneda }}{{ format(data.monto_del_prestamo) }}</span></div>
+        <div class="result-item"><span>N° Cuotas por Año</span><span class="value">{{ format(data.dias_por_anio / data.frecuencia_pago_dias) }}</span></div>
+        <div class="result-item"><span>N° Total de Cuotas</span><span class="value">{{ data.cronograma.length }}</span></div>
+      </div>
+
+      <!-- Agrupación 2: De los costes/gastos periódicos -->
+      <h3 class="section-title mt-4">... de los costes/gastos periódicos</h3>
+      <div class="grid-2 gap-4">
+        <div class="result-item"><span>% Seguro desgravamen per.</span><span class="value">{{ format(data.seguro_desgravamen * 100) }}%</span></div>
+        <div class="result-item"><span>Seguro riesgo</span><span class="value">{{ moneda }}{{ format(data.seguro_vehicular_periodo) }}</span></div>
+      </div>
+
+      <!-- Agrupación 3: Totales -->
+      <h3 class="section-title mt-4">... totales por ...</h3>
+      <div class="grid-2 gap-4">
+        <div class="result-item"><span>Intereses</span><span class="value">{{ moneda }}{{ format(data.totales?.interes) }}</span></div>
+        <div class="result-item"><span>Amortización del capital</span><span class="value">{{ moneda }}{{ format(data.totales?.amortizacion) }}</span></div>
+        <div class="result-item"><span>Seguro de desgravamen</span><span class="value">{{ moneda }}{{ format(data.totales?.seguro_desgravamen) }}</span></div>
+        <div class="result-item"><span>Seguro contra todo riesgo</span><span class="value">{{ moneda }}{{ format(data.totales?.seguro_vehicular) }}</span></div>
+        <div class="result-item"><span>Comisiones periódicas</span><span class="value">{{ moneda }}{{ format(data.totales?.comisiones) }}</span></div>
+        <div class="result-item"><span>Portes / Gastos de adm.</span><span class="value">{{ moneda }}{{ format(data.totales?.portes_gastos) }}</span></div>
+      </div>
+
+      <!-- Agrupación 4: Indicadores de Rentabilidad -->
+      <h3 class="section-title mt-4">... de Indicadores de Rentabilidad</h3>
+      <div class="grid-2 gap-4">
+        <div class="result-item highlight"><span>Tasa de descuento</span><span class="value">{{ format(data.TEP_COK * 100) }}%</span></div>
+        <div class="result-item highlight"><span>TIR de la operación</span><span class="value">{{ format(data.TIR_periodo * 100) }}%</span></div>
+        <div class="result-item highlight"><span>TCEA de la operación</span><span class="value">{{ format(data.TCEA * 100) }}%</span></div>
+        <div class="result-item highlight"><span>VAN operación</span><span class="value">{{ moneda }}{{ format(data.VAN) }}</span></div>
+      </div>
+
+      <div class="mt-4 text-center">
+        <button class="btn-primary" @click="exportar"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
+      </div>
     </div>
 
     <div class="glass-panel table-container">
