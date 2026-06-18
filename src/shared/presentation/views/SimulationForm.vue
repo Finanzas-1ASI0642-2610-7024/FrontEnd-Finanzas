@@ -7,10 +7,20 @@
       </div>
     </div>
     <div class="glass-panel">
-      <form @submit.prevent="submitSimulation" class="form-grid">
+      <!-- Stepper Header -->
+      <div class="stepper">
+        <div class="step" :class="{ active: currentStep >= 1 }"><div class="step-circle">1</div><span>Participantes</span></div>
+        <div class="step-line" :class="{ active: currentStep >= 2 }"></div>
+        <div class="step" :class="{ active: currentStep >= 2 }"><div class="step-circle">2</div><span>Estructura</span></div>
+        <div class="step-line" :class="{ active: currentStep >= 3 }"></div>
+        <div class="step" :class="{ active: currentStep >= 3 }"><div class="step-circle">3</div><span>Seguros y Costos</span></div>
+      </div>
+
+      <form @submit.prevent="handleNextOrSubmit" class="form-grid">
         
-        <!-- Datos del Cliente -->
-        <h3 class="section-title">Datos del Cliente</h3>
+        <!-- PASO 1: PARTICIPANTES -->
+        <template v-if="currentStep === 1">
+          <h3 class="section-title">Datos del Cliente</h3>
         <div class="form-group" style="grid-column: span 2;">
           <label>Seleccionar Cliente</label>
           <select v-model="form.ID_Cliente" required class="select-full">
@@ -28,8 +38,10 @@
             <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ v.marca }} {{ v.modelo }} - {{ v.anio }} ({{ v.moneda === 'USD' ? '$' : 'S/' }}{{ Number(v.precio).toFixed(2) }})</option>
           </select>
         </div>
+        </template>
 
-        <!-- Datos del Crédito -->
+        <!-- PASO 2: ESTRUCTURA DEL CRÉDITO -->
+        <template v-if="currentStep === 2">
         <!-- Datos del Crédito -->
         <h3 class="section-title">Datos del Crédito</h3>
         <div class="form-group">
@@ -53,7 +65,7 @@
             <option value="TNA">Tasa Nominal Anual (TNA)</option>
           </select>
         </div>
-        <div class="form-group"><label>Valor de Tasa (Ej: 0.15 para 15%)</label><input type="number" step="0.0001" v-model.number="form.tasa_interes" required /></div>
+        <div class="form-group"><label>Valor de Tasa (%) (Ej: 15 para 15%)</label><input type="number" step="0.0001" v-model.number="form.tasa_interes" required /></div>
         <div class="form-group" v-if="form.tipo_tasa === 'TNA'">
           <label>Capitalización</label>
           <select v-model="form.capitalizacion" class="select-full">
@@ -76,11 +88,10 @@
           <select v-model="form.tipo_gracia" class="select-full"><option value="Ninguno">Ninguno</option><option value="Parcial">Parcial</option><option value="Total">Total</option></select>
         </div>
         <div class="form-group" v-if="form.tipo_gracia !== 'Ninguno'"><label>Periodos de Gracia</label><input type="number" v-model.number="form.periodos_gracia" /></div>
-        
-        <h3 class="section-title">Parámetros de Evaluación Financiera</h3>
-        <div class="form-group"><label>Tasa de Descuento (COK) Ej: 0.10</label><input type="number" step="0.0001" v-model.number="form.tasa_descuento_COK" required /></div>
+        </template>
 
-        <!-- Seguros y Comisiones -->
+        <!-- PASO 3: SEGUROS Y COSTOS -->
+        <template v-if="currentStep === 3">
         <h3 class="section-title">Costos Iniciales (Día 0)</h3>
         <div class="form-group" style="grid-column: span 2;">
           <small class="text-secondary">Estos gastos se suman al saldo a financiar para formar el monto total del préstamo, ya que el banco los financia y no se pagan de contado.</small>
@@ -95,15 +106,17 @@
         <div class="form-group"><label>Portes (Fijo por cuota)</label><input type="number" step="0.01" v-model.number="form.portes" /></div>
         <div class="form-group"><label>Gastos de Administración (Fijo por cuota)</label><input type="number" step="0.01" v-model.number="form.gastos_administracion" /></div>
         <div class="form-group"><label>Comisión Periódica (Fijo por cuota)</label><input type="number" step="0.01" v-model.number="form.comisiones" /></div>
-        <div class="form-group"><label>% de Seguro Desgravamen (por cuota, Ej: 0.00049)</label><input type="number" step="0.00001" v-model.number="form.seguro_desgravamen" /></div>
-        <div class="form-group"><label>% de Seguro Riesgo (anual, Ej: 0.004)</label><input type="number" step="0.0001" v-model.number="form.seguro_vehicular_anual" /></div>
+        <div class="form-group"><label>% de Seguro Desgravamen (por cuota, Ej: 0.05 para 0.05%)</label><input type="number" step="0.00001" v-model.number="form.seguro_desgravamen" /></div>
+        <div class="form-group"><label>% de Seguro Riesgo (anual, Ej: 4 para 4%)</label><input type="number" step="0.0001" v-model.number="form.seguro_vehicular_anual" /></div>
         
         <h3 class="section-title">Costo de Oportunidad</h3>
-        <div class="form-group"><label>Tasa de Descuento (COK) Ej: 0.25 para 25%</label><input type="number" step="0.0001" v-model.number="form.tasa_descuento_COK" required /></div>
+        <div class="form-group"><label>Tasa de Descuento (COK) (%) Ej: 25 para 25%</label><input type="number" step="0.0001" v-model.number="form.tasa_descuento_COK" required /></div>
+        </template>
 
         <div class="form-actions">
-          <button type="submit" class="btn-primary" :disabled="loading">{{ loading ? 'Calculando...' : 'Calcular y Guardar' }}</button>
-          <button type="button" class="btn-secondary" @click="$router.push('/dashboard')">Cancelar</button>
+          <button type="button" class="btn-secondary" v-if="currentStep > 1" @click="currentStep--">Atrás</button>
+          <button type="submit" class="btn-primary" :disabled="loading">{{ currentStep === 3 ? (loading ? 'Calculando...' : 'Calcular y Guardar') : 'Siguiente' }}</button>
+          <button type="button" class="btn-secondary" v-if="currentStep === 1" @click="$router.push('/dashboard')">Cancelar</button>
         </div>
       </form>
     </div>
@@ -119,6 +132,7 @@ const router = useRouter();
 const route = useRoute();
 const loading = ref(false);
 const isEditing = ref(false);
+const currentStep = ref(1);
 const clients = ref([]);
 const vehicles = ref([]);
 
@@ -127,14 +141,14 @@ const form = reactive({
   ID_Cliente: '', ID_Vehiculo: '',
   tipo_moneda: 'PEN', tipo_cambio: 3.4500,
   cuota_inicial_porcentaje: 20, cuota_final_porcentaje: 30,
-  tipo_tasa: 'TEA', tasa_interes: 0.15, capitalizacion: 'Mensual',
+  tipo_tasa: 'TEA', tasa_interes: 15, capitalizacion: 'Mensual', // Natural percentage
   numero_anios: 1, frecuencia_pago_dias: 30, dias_por_anio: 360,
   tipo_gracia: 'Ninguno', periodos_gracia: 0,
   tasacion: 0, comision_estudio: 0, comision_activacion: 0,
   costos_notariales: 0, costos_registrales: 0,
   portes: 0, gastos_administracion: 0,
-  seguro_desgravamen: 0.0005, seguro_vehicular_anual: 0.05, comisiones: 0,
-  tasa_descuento_COK: 0.10
+  seguro_desgravamen: 0.05, seguro_vehicular_anual: 5, comisiones: 0, // Natural percentage
+  tasa_descuento_COK: 10 // Natural percentage
 });
 
 onMounted(async () => {
@@ -162,7 +176,7 @@ onMounted(async () => {
       form.tipo_moneda = data.tipo_moneda || 'PEN';
       form.tipo_cambio = parseFloat(data.tipo_cambio) || 1.0000;
       form.tipo_tasa = data.tipo_tasa;
-      form.tasa_interes = parseFloat(data.tasa_interes);
+      form.tasa_interes = (parseFloat(data.tasa_interes) || 0) * 100; // API to Form (Natural)
       form.capitalizacion = data.capitalizacion;
       form.numero_anios = data.numero_anios || 1;
       form.frecuencia_pago_dias = data.frecuencia_pago_dias || 30;
@@ -170,8 +184,8 @@ onMounted(async () => {
       form.tipo_gracia = data.tipo_gracia;
       form.periodos_gracia = data.periodos_gracia;
       
-      form.seguro_desgravamen = parseFloat(data.CostosAdicionale?.seguro_desgravamen) || 0;
-      form.seguro_vehicular_anual = parseFloat(data.CostosAdicionale?.seguro_vehicular) || 0;
+      form.seguro_desgravamen = (parseFloat(data.CostosAdicionale?.seguro_desgravamen) || 0) * 100; // API to Form (Natural)
+      form.seguro_vehicular_anual = (parseFloat(data.CostosAdicionale?.seguro_vehicular) || 0) * 100; // API to Form (Natural)
       form.comisiones = parseFloat(data.CostosAdicionale?.comisiones) || 0;
       form.costos_notariales = parseFloat(data.CostosAdicionale?.costos_notariales) || 0;
       form.costos_registrales = parseFloat(data.CostosAdicionale?.costos_registrales) || 0;
@@ -180,18 +194,30 @@ onMounted(async () => {
       form.comision_activacion = parseFloat(data.CostosAdicionale?.comision_activacion) || 0;
       form.portes = parseFloat(data.CostosAdicionale?.portes) || 0;
       form.gastos_administracion = parseFloat(data.CostosAdicionale?.gastos_administracion) || 0;
-      form.tasa_descuento_COK = parseFloat(data.tasa_descuento_COK) || 0.10;
+      form.tasa_descuento_COK = (parseFloat(data.tasa_descuento_COK) || 0) * 100; // API to Form (Natural)
     } catch(e) {
       console.error(e);
     }
   }
 });
 
-const submitSimulation = async () => {
+const handleNextOrSubmit = async () => {
+  if (currentStep.value < 3) {
+    currentStep.value++;
+    return;
+  }
+  
   loading.value = true;
   try {
+    // Convert Natural Percentages to Decimals before sending
+    const payload = { ...form };
+    payload.tasa_interes = payload.tasa_interes / 100;
+    payload.seguro_desgravamen = payload.seguro_desgravamen / 100;
+    payload.seguro_vehicular_anual = payload.seguro_vehicular_anual / 100;
+    payload.tasa_descuento_COK = payload.tasa_descuento_COK / 100;
+
     const headers = { userid: localStorage.getItem('userid') };
-    const response = await axios.post('http://localhost:3000/api/credit/simulate', form, { headers });
+    const response = await axios.post('http://localhost:3000/api/credit/simulate', payload, { headers });
     router.push(`/results?id=${response.data.data.id}`);
   } catch(e) {
     console.error("Error", e);
@@ -206,7 +232,15 @@ const submitSimulation = async () => {
 .header-actions { margin-bottom: 2rem; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
 .section-title { grid-column: span 2; color: var(--accent-blue); margin-top: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; }
-.form-actions { grid-column: span 2; display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; }
+.form-actions { grid-column: span 2; display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; }
 .btn-secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--glass-border); padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; }
 .select-full { width: 100%; padding: 0.8rem; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; color: white; }
+
+.stepper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding: 1rem 2rem; background: rgba(0,0,0,0.2); border-radius: 12px; }
+.step { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--text-secondary); transition: 0.3s; }
+.step.active { color: var(--accent-cyan); }
+.step-circle { width: 35px; height: 35px; border-radius: 50%; background: var(--input-bg); display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid var(--glass-border); }
+.step.active .step-circle { background: var(--accent-cyan); color: #000; border-color: var(--accent-cyan); }
+.step-line { flex-grow: 1; height: 3px; background: var(--glass-border); margin: 0 1rem; margin-top: -20px; transition: 0.3s; }
+.step-line.active { background: var(--accent-cyan); }
 </style>
