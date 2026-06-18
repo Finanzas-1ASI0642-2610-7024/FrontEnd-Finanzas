@@ -19,7 +19,10 @@
           <h3>Datos del Vehículo</h3>
           <p><strong>Modelo:</strong> {{ vehiculo.marca }} {{ vehiculo.modelo }} ({{ vehiculo.estado }})</p>
           <p><strong>N° Serie:</strong> {{ vehiculo.numero_serie }} | <strong>Kilometraje:</strong> {{ vehiculo.kilometraje }} km</p>
-          <p><strong>Precio:</strong> {{ moneda }}{{ Number(vehiculo.precio).toFixed(2) }}</p>
+          <p><strong>Precio Catálogo:</strong> {{ vehiculo.moneda === 'USD' ? '$' : 'S/' }}{{ Number(vehiculo.precio).toFixed(2) }} 
+             <span v-if="tipo_cambio != 1" class="text-secondary">(T.C. aplicado: {{ tipo_cambio }})</span>
+          </p>
+          <p><strong>Costos Notariales:</strong> {{ moneda }}{{ format(costos_notariales) }} | <strong>Costos Registrales:</strong> {{ moneda }}{{ format(costos_registrales) }}</p>
         </div>
         <div v-if="vehiculo.imagen" class="photo-container">
           <img :src="vehiculo.imagen" alt="Foto del vehículo" class="car-photo" />
@@ -29,24 +32,24 @@
 
     <div class="indicators grid">
       <div class="glass-panel indicator">
-        <p>Monto Financiado</p>
+        <p>Monto a Financiar</p>
         <h3>{{ moneda }}{{ format(data?.monto_financiado) }}</h3>
       </div>
       <div class="glass-panel indicator">
-        <p>Cuota Referencial</p>
-        <h3 class="highlight">{{ moneda }}{{ format(data?.cuota_mensual_referencial) }}</h3>
+        <p>Gastos Iniciales (Día 0)</p>
+        <h3 class="text-red">-{{ moneda }}{{ format(costos_iniciales_totales) }}</h3>
       </div>
       <div class="glass-panel indicator">
-        <p>VAN</p>
-        <h3 class="highlight-green">{{ moneda }}{{ format(data?.VAN) }}</h3>
+        <p>VAN (Neto)</p>
+        <h3 :class="data?.VAN > 0 ? 'highlight-green' : 'text-red'">{{ moneda }}{{ format(data?.VAN) }}</h3>
       </div>
       <div class="glass-panel indicator">
         <p>TCEA</p>
         <h3 class="highlight-purple">{{ format(data?.TCEA * 100) }}%</h3>
       </div>
       <div class="glass-panel indicator">
-        <p>Cuota Final (Balloon)</p>
-        <h3>{{ moneda }}{{ format(data?.cuota_final) }}</h3>
+        <p>Cuota Referencial</p>
+        <h3 class="highlight">{{ moneda }}{{ format(data?.cuota_mensual_referencial) }}</h3>
       </div>
     </div>
 
@@ -95,6 +98,10 @@ const vehiculo = ref(null);
 const creditId = ref(null);
 const isOtorgado = ref(false);
 const moneda = ref('S/');
+const tipo_cambio = ref(1);
+const costos_iniciales_totales = ref(0);
+const costos_notariales = ref(0);
+const costos_registrales = ref(0);
 
 onMounted(async () => {
   creditId.value = route.query.id;
@@ -106,7 +113,15 @@ onMounted(async () => {
       vehiculo.value = c.Vehiculo;
       isOtorgado.value = c.estado === 'Otorgado';
       moneda.value = c.tipo_moneda === 'USD' ? '$' : 'S/';
+      tipo_cambio.value = Number(c.tipo_cambio) || 1;
       
+      const cn = Number(c.CostosAdicionale?.costos_notariales) || 0;
+      const cr = Number(c.CostosAdicionale?.costos_registrales) || 0;
+      const com = Number(c.CostosAdicionale?.comisiones) || 0;
+      costos_notariales.value = cn;
+      costos_registrales.value = cr;
+      costos_iniciales_totales.value = cn + cr + com;
+
       data.value = {
         monto_financiado: c.monto_financiado,
         cuota_mensual_referencial: c.DatosSalida?.cuota_mensual,
@@ -142,6 +157,7 @@ const format = (num) => Number(num || 0).toFixed(2);
 .highlight { color: var(--accent-cyan); }
 .highlight-purple { color: #b14eff; }
 .highlight-green { color: #52c41a; }
+.text-red { color: #ff4d4f; }
 .table-container { overflow-x: auto; }
 .bold-cuota { color: var(--accent-cyan); font-weight: 600; }
 .mb { margin-bottom: 1.5rem; padding: 1.5rem; }

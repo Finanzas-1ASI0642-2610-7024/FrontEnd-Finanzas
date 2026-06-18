@@ -28,7 +28,7 @@
             <td>{{ c.celular || 'N/A' }}</td>
             <td>{{ c.direccion || 'N/A' }}</td>
             <td>{{ c.edad }}</td>
-            <td>${{ Number(c.ingreso_mensual).toFixed(2) }}</td>
+            <td>{{ c.moneda_ingresos === 'USD' ? '$' : 'S/' }}{{ Number(c.ingreso_mensual).toFixed(2) }}</td>
             <td>
               <button class="btn-icon" @click="openModal(c)">✏️</button>
               <button class="btn-icon text-red" @click="deleteClient(c.id)">🗑️</button>
@@ -73,7 +73,15 @@
             </select>
           </div>
           <div class="form-group"><label>Edad</label><input type="number" v-model.number="form.edad" required /></div>
-          <div class="form-group"><label>Ingreso Mensual ($)</label><input type="number" step="0.01" v-model.number="form.ingreso_mensual" required /></div>
+          
+          <div class="form-group">
+            <label>Moneda Ingreso</label>
+            <select v-model="form.moneda_ingresos" class="select-full">
+              <option value="PEN">Soles (S/)</option>
+              <option value="USD">Dólares ($)</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Ingreso Mensual</label><input type="number" step="0.01" v-model.number="form.ingreso_mensual" required /></div>
           
           <div class="form-actions">
             <button type="button" class="btn-secondary" @click="showModal = false">Cancelar</button>
@@ -96,7 +104,7 @@ const showModal = ref(false);
 const form = reactive({ 
   id: null, dni: '', nombre: '', apellido: '', direccion: '', 
   ocupacion: '', genero: 'Masculino', celular: '', estado_civil: 'Soltero',
-  edad: 30, ingreso_mensual: 0 
+  edad: 30, ingreso_mensual: 0, moneda_ingresos: 'PEN'
 });
 
 const fetchClients = async () => {
@@ -115,7 +123,7 @@ const openModal = (client = null) => {
     Object.assign(form, { 
       id: null, dni: '', nombre: '', apellido: '', direccion: '', 
       ocupacion: '', genero: 'Masculino', celular: '', estado_civil: 'Soltero',
-      edad: 30, ingreso_mensual: 0 
+      edad: 30, ingreso_mensual: 0, moneda_ingresos: 'PEN'
     });
   }
   showModal.value = true;

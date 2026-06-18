@@ -33,7 +33,7 @@
             <td>{{ v.estado }}</td>
             <td>{{ v.kilometraje }} km</td>
             <td>{{ v.anio }}</td>
-            <td>${{ Number(v.precio).toFixed(2) }}</td>
+            <td>{{ v.moneda === 'USD' ? '$' : 'S/' }}{{ Number(v.precio).toFixed(2) }}</td>
             <td>
               <button class="btn-icon" @click="openModal(v)">✏️</button>
               <button class="btn-icon text-red" @click="deleteVehicle(v.id)">🗑️</button>
@@ -66,7 +66,14 @@
           
           <div class="form-group"><label>Kilometraje</label><input type="number" v-model.number="form.kilometraje" required /></div>
           <div class="form-group"><label>Año</label><input type="number" v-model.number="form.anio" required /></div>
-          <div class="form-group"><label>Precio ($)</label><input type="number" step="0.01" v-model.number="form.precio" required /></div>
+          <div class="form-group">
+            <label>Moneda Precio</label>
+            <select v-model="form.moneda" class="select-full">
+              <option value="PEN">Soles (S/)</option>
+              <option value="USD">Dólares ($)</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: span 2;"><label>Precio</label><input type="number" step="0.01" v-model.number="form.precio" required /></div>
           
           <div class="form-group" style="grid-column: span 2;">
             <label>Foto del Vehículo</label>
@@ -95,7 +102,7 @@ const showModal = ref(false);
 const uploading = ref(false);
 const form = reactive({ 
   id: null, marca: '', modelo: '', anio: 2024, precio: 0, 
-  estado: 'Nuevo', numero_serie: '', kilometraje: 0, imagen: '' 
+  estado: 'Nuevo', numero_serie: '', kilometraje: 0, moneda: 'PEN', imagen: '' 
 });
 
 const fetchVehicles = async () => {
@@ -113,7 +120,7 @@ const openModal = (vehicle = null) => {
   } else {
     Object.assign(form, { 
       id: null, marca: '', modelo: '', anio: 2024, precio: 0, 
-      estado: 'Nuevo', numero_serie: '', kilometraje: 0, imagen: '' 
+      estado: 'Nuevo', numero_serie: '', kilometraje: 0, moneda: 'PEN', imagen: '' 
     });
   }
   showModal.value = true;
