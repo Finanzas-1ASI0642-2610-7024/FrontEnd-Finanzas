@@ -26,32 +26,50 @@
           <p><strong>Comisiones (Estudio/Activación):</strong> {{ moneda }}{{ format(comision_estudio + comision_activacion) }}</p>
         </div>
         <div v-if="vehiculo.imagen" class="photo-container">
-          <img :src="vehiculo.imagen" alt="Foto del vehículo" class="car-photo" />
+          <div class="result-card" v-if="data">
+        <h2 class="text-center mb-4"><i class="fas fa-chart-line"></i> Resumen de la Simulación</h2>
+
+        <!-- Agrupación 1: Del financiamiento -->
+        <h3 class="section-title">... del financiamiento</h3>
+        <div class="grid-2 gap-4">
+          <div class="result-item"><span>Saldo a financiar</span><span class="value">{{ moneda }}{{ format(data.monto_financiado) }}</span></div>
+          <div class="result-item"><span>Monto del préstamo</span><span class="value">{{ moneda }}{{ format(data.monto_del_prestamo) }}</span></div>
+          <div class="result-item"><span>N° Cuotas por Año</span><span class="value">{{ format(data.dias_por_anio / data.frecuencia_pago_dias) }}</span></div>
+          <div class="result-item"><span>N° Total de Cuotas</span><span class="value">{{ data.cronograma.length }}</span></div>
+        </div>
+
+        <!-- Agrupación 2: De los costes/gastos periódicos -->
+        <h3 class="section-title mt-4">... de los costes/gastos periódicos</h3>
+        <div class="grid-2 gap-4">
+          <div class="result-item"><span>% Seguro desgravamen per.</span><span class="value">{{ format(data.seguro_desgravamen * 100) }}%</span></div>
+          <div class="result-item"><span>Seguro riesgo</span><span class="value">{{ moneda }}{{ format(data.seguro_vehicular_periodo) }}</span></div>
+        </div>
+
+        <!-- Agrupación 3: Totales -->
+        <h3 class="section-title mt-4">... totales por ...</h3>
+        <div class="grid-2 gap-4">
+          <div class="result-item"><span>Intereses</span><span class="value">{{ moneda }}{{ format(data.totales?.interes) }}</span></div>
+          <div class="result-item"><span>Amortización del capital</span><span class="value">{{ moneda }}{{ format(data.totales?.amortizacion) }}</span></div>
+          <div class="result-item"><span>Seguro de desgravamen</span><span class="value">{{ moneda }}{{ format(data.totales?.seguro_desgravamen) }}</span></div>
+          <div class="result-item"><span>Seguro contra todo riesgo</span><span class="value">{{ moneda }}{{ format(data.totales?.seguro_vehicular) }}</span></div>
+          <div class="result-item"><span>Comisiones periódicas</span><span class="value">{{ moneda }}{{ format(data.totales?.comisiones) }}</span></div>
+          <div class="result-item"><span>Portes / Gastos de adm.</span><span class="value">{{ moneda }}{{ format(data.totales?.portes_gastos) }}</span></div>
+        </div>
+
+        <!-- Agrupación 4: Indicadores de Rentabilidad -->
+        <h3 class="section-title mt-4">... de Indicadores de Rentabilidad</h3>
+        <div class="grid-2 gap-4">
+          <div class="result-item highlight"><span>Tasa de descuento</span><span class="value">{{ format(data.TEP_COK * 100) }}%</span></div>
+          <div class="result-item highlight"><span>TIR de la operación</span><span class="value">{{ format(data.TIR_periodo * 100) }}%</span></div>
+          <div class="result-item highlight"><span>TCEA de la operación</span><span class="value">{{ format(data.TCEA * 100) }}%</span></div>
+          <div class="result-item highlight"><span>VAN operación</span><span class="value">{{ moneda }}{{ format(data.VAN) }}</span></div>
+        </div>
+
+        <div class="mt-4 text-center">
+          <button class="btn-primary" @click="exportar"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
         </div>
       </div>
     </div>
-
-    <div class="indicators grid">
-      <div class="glass-panel indicator">
-        <p>Monto a Financiar</p>
-        <h3>{{ moneda }}{{ format(data?.monto_financiado) }}</h3>
-      </div>
-      <div class="glass-panel indicator">
-        <p>Gastos Iniciales (Día 0)</p>
-        <h3 class="text-red">-{{ moneda }}{{ format(costos_iniciales_totales) }}</h3>
-      </div>
-      <div class="glass-panel indicator">
-        <p>VAN (Neto)</p>
-        <h3 :class="data?.VAN > 0 ? 'highlight-green' : 'text-red'">{{ moneda }}{{ format(data?.VAN) }}</h3>
-      </div>
-      <div class="glass-panel indicator">
-        <p>TCEA</p>
-        <h3 class="highlight-purple">{{ format(data?.TCEA * 100) }}%</h3>
-      </div>
-      <div class="glass-panel indicator">
-        <p>Cuota Referencial</p>
-        <h3 class="highlight">{{ moneda }}{{ format(data?.cuota_mensual_referencial) }}</h3>
-      </div>
     </div>
 
     <div class="glass-panel table-container">
@@ -124,22 +142,28 @@ onMounted(async () => {
       const tas = Number(c.CostosAdicionale?.tasacion) || 0;
       const c_est = Number(c.CostosAdicionale?.comision_estudio) || 0;
       const c_act = Number(c.CostosAdicionale?.comision_activacion) || 0;
-      const com = Number(c.CostosAdicionale?.comisiones) || 0; // esta es periódica, la sumamos a la inicial si el usuario la usaba así, pero ahora es periódica.
-      // Corrección: Los gastos iniciales son los que se pagan en Día 0.
+      const com = Number(c.CostosAdicionale?.comisiones) || 0;
       costos_notariales.value = cn;
       costos_registrales.value = cr;
       tasacion.value = tas;
       comision_estudio.value = c_est;
       comision_activacion.value = c_act;
-      // La comision normal ahora se asume periódica o del día 0 según cómo la usen, el backend asume ambas. Restamos comisiones en día 0 en backend, así que lo sumamos aquí.
       costos_iniciales_totales.value = cn + cr + tas + c_est + c_act + com;
 
       data.value = {
-        monto_financiado: c.monto_financiado,
-        cuota_mensual_referencial: c.DatosSalida?.cuota_mensual,
-        TCEA: c.DatosSalida?.TCEA,
-        VAN: c.DatosSalida?.VAN,
-        cuota_final: c.DatosSalida?.cuota_final
+        monto_financiado: res.data.data.monto_financiado,
+        monto_del_prestamo: res.data.data.monto_del_prestamo,
+        cuota_mensual_referencial: res.data.data.cuota_mensual_referencial,
+        VAN: res.data.data.VAN,
+        TCEA: res.data.data.TCEA,
+        TEP_COK: res.data.data.TEP_COK,
+        TIR_periodo: res.data.data.TIR_periodo,
+        cronograma: res.data.data.cronograma,
+        totales: res.data.data.totales,
+        dias_por_anio: c.dias_por_anio || 360,
+        frecuencia_pago_dias: c.frecuencia_pago_dias || 30,
+        seguro_desgravamen: Number(c.CostosAdicionale?.seguro_desgravamen) || 0,
+        seguro_vehicular_periodo: ((Number(c.CostosAdicionale?.seguro_vehicular) || 0) / (c.dias_por_anio || 360)) * (c.frecuencia_pago_dias || 30)
       };
       if(c.DatosSalida?.cronograma_pagos_json) {
         cronograma.value = JSON.parse(c.DatosSalida.cronograma_pagos_json);
