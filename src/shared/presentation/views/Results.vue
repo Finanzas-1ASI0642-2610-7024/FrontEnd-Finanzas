@@ -153,24 +153,40 @@ onMounted(async () => {
       comision_activacion.value = c_act;
       costos_iniciales_totales.value = cn + cr + tas + c_est + c_act + com;
 
+      const TEP_COK = Math.pow(1 + (Number(c.tasa_descuento_COK) || 0.10), (c.frecuencia_pago_dias || 30) / (c.dias_por_anio || 360)) - 1;
+
+      let crono = [];
+      if(c.DatosSalida?.cronograma_pagos_json) {
+        crono = JSON.parse(c.DatosSalida.cronograma_pagos_json);
+      }
+      cronograma.value = crono;
+
+      const totales_calculados = crono.reduce((acc, curr) => {
+        acc.interes += curr.interes;
+        acc.amortizacion += curr.amortizacion;
+        acc.seguro_desgravamen += curr.seguro_desgravamen;
+        acc.seguro_vehicular += curr.seguro_vehicular;
+        return acc;
+      }, { interes: 0, amortizacion: 0, seguro_desgravamen: 0, seguro_vehicular: 0 });
+
+      totales_calculados.comisiones = com * crono.length;
+      totales_calculados.portes_gastos = (Number(c.CostosAdicionale?.portes || 0) + Number(c.CostosAdicionale?.gastos_administracion || 0)) * crono.length;
+
       data.value = {
-        monto_financiado: res.data.data.monto_financiado,
-        monto_del_prestamo: res.data.data.monto_del_prestamo,
-        cuota_mensual_referencial: res.data.data.cuota_mensual_referencial,
-        VAN: res.data.data.VAN,
-        TCEA: res.data.data.TCEA,
-        TEP_COK: res.data.data.TEP_COK,
-        TIR_periodo: res.data.data.TIR_periodo,
-        cronograma: res.data.data.cronograma,
-        totales: res.data.data.totales,
+        monto_financiado: c.DatosSalida?.monto_financiado,
+        monto_del_prestamo: Number(c.DatosSalida?.monto_financiado || 0) + costos_iniciales_totales.value,
+        cuota_mensual_referencial: c.DatosSalida?.cuota_mensual,
+        VAN: c.DatosSalida?.VAN,
+        TCEA: c.DatosSalida?.TCEA,
+        TEP_COK: TEP_COK,
+        TIR_periodo: c.DatosSalida?.TIR,
+        cronograma: crono,
+        totales: totales_calculados,
         dias_por_anio: c.dias_por_anio || 360,
         frecuencia_pago_dias: c.frecuencia_pago_dias || 30,
         seguro_desgravamen: Number(c.CostosAdicionale?.seguro_desgravamen) || 0,
         seguro_vehicular_periodo: ((Number(c.CostosAdicionale?.seguro_vehicular) || 0) / (c.dias_por_anio || 360)) * (c.frecuencia_pago_dias || 30)
       };
-      if(c.DatosSalida?.cronograma_pagos_json) {
-        cronograma.value = JSON.parse(c.DatosSalida.cronograma_pagos_json);
-      }
     } catch(e) {
       console.error(e);
     }

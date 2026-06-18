@@ -41,7 +41,7 @@
         </div>
         <div class="form-group"><label>Tipo de Cambio</label><input type="number" step="0.0001" v-model.number="form.tipo_cambio" required /></div>
         <div class="form-group" style="grid-column: span 2;">
-            <small class="text-secondary">El precio del vehículo será convertido a la moneda del crédito usando el Tipo de Cambio indicado (Ej. 3.80 o 1.00 si no aplica).</small>
+            <small class="text-secondary">El precio del vehículo será convertido a la moneda del crédito usando el Tipo de Cambio indicado (Ej. 3.45 o 1.00 si no aplica).</small>
         </div>
         
         <div class="form-group"><label>% Cuota Inicial (Ej: 20)</label><input type="number" step="0.01" v-model.number="form.cuota_inicial_porcentaje" required /></div>
@@ -63,7 +63,13 @@
         </div>
         <div class="form-group"><label>N° de Años (Ej: 12)</label><input type="number" v-model.number="form.numero_anios" required /></div>
         <div class="form-group"><label>Frecuencia de Pago en días (Ej: 90)</label><input type="number" v-model.number="form.frecuencia_pago_dias" required /></div>
-        <div class="form-group"><label>N° de Días por Año (360 o 365)</label><input type="number" v-model.number="form.dias_por_anio" required /></div>
+        <div class="form-group">
+          <label>N° de Días por Año</label>
+          <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem;"><input type="radio" v-model.number="form.dias_por_anio" :value="360" /> 360 (Año Comercial)</label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;"><input type="radio" v-model.number="form.dias_por_anio" :value="365" /> 365 (Año Exacto)</label>
+          </div>
+        </div>
         
         <div class="form-group">
           <label>Tipo de Gracia</label>
@@ -76,6 +82,9 @@
 
         <!-- Seguros y Comisiones -->
         <h3 class="section-title">Costos Iniciales (Día 0)</h3>
+        <div class="form-group" style="grid-column: span 2;">
+          <small class="text-secondary">Estos gastos se suman al saldo a financiar para formar el monto total del préstamo, ya que el banco los financia y no se pagan de contado.</small>
+        </div>
         <div class="form-group"><label>Tasación ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.tasacion" /></div>
         <div class="form-group"><label>Comisión de Estudio ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.comision_estudio" /></div>
         <div class="form-group"><label>Comisión Activación ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.comision_activacion" /></div>
@@ -116,7 +125,7 @@ const vehicles = ref([]);
 const form = reactive({
   id: null,
   ID_Cliente: '', ID_Vehiculo: '',
-  tipo_moneda: 'PEN', tipo_cambio: 1.0000,
+  tipo_moneda: 'PEN', tipo_cambio: 3.4500,
   cuota_inicial_porcentaje: 20, cuota_final_porcentaje: 30,
   tipo_tasa: 'TEA', tasa_interes: 0.15, capitalizacion: 'Mensual',
   numero_anios: 1, frecuencia_pago_dias: 30, dias_por_anio: 360,
