@@ -90,7 +90,7 @@ const fetchData = async () => {
   const headers = { userid: localStorage.getItem('userid'), role: localStorage.getItem('role') };
   const res = await axios.get('http://localhost:3000/api/credit/history', { headers });
   
-  simulaciones.value = res.data.data.filter(c => c.estado === 'Simulacion');
+  simulaciones.value = res.data.data.filter(c => c.estado === 'Simulado');
   otorgados.value = res.data.data.filter(c => c.estado === 'Otorgado');
 };
 
