@@ -230,7 +230,7 @@ const format = (num) => Number(num || 0).toFixed(2);
 </script>
 
 <style scoped>
-.results-page { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+.results-page { padding: 2rem; max-width: 1600px; margin: 0 auto; }
 .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
 .indicator { text-align: center; padding: 1.5rem; }
