@@ -2,9 +2,14 @@
   <div class="results-page">
     <div class="header-actions">
       <h2>{{ isOtorgado ? 'Crédito Otorgado' : 'Resultados de Simulación' }}</h2>
-      <div>
-        <button class="btn-secondary mr" @click="$router.push('/dashboard')">Volver</button>
-        <button class="btn-primary" @click="descargarExcel" v-if="creditId">Exportar Excel</button>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="btn-secondary" @click="$router.push('/dashboard')">Volver al Inicio</button>
+        <button class="btn-secondary" @click="$router.push(`/simulate?id=${creditId}`)" v-if="creditId && !isOtorgado">
+          <i class="fas fa-edit"></i> Editar Simulación
+        </button>
+        <button class="btn-primary" @click="descargarExcel" v-if="creditId">
+          <i class="fas fa-file-excel"></i> Exportar a Excel
+        </button>
       </div>
     </div>
 
@@ -80,10 +85,6 @@
             <li><strong>Portes y Comisiones:</strong> {{ moneda }}{{ format(data.totales?.comisiones + data.totales?.portes_gastos) }}</li>
           </ul>
         </div>
-      </div>
-
-      <div class="mt-4 text-center">
-        <button class="btn-primary" @click="exportar"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
       </div>
     </div>
 
