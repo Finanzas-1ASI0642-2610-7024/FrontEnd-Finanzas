@@ -31,43 +31,55 @@
       </div>
     </div>
 
-    <div class="result-card" v-if="data">
-      <h2 class="text-center mb-4"><i class="fas fa-chart-line"></i> Resumen de la Simulación</h2>
+    <div class="result-card dashboard-container" v-if="data">
+      <h2 class="text-center mb-4"><i class="fas fa-chart-line"></i> Dashboard de Rentabilidad</h2>
 
-      <!-- Agrupación 1: Del financiamiento -->
-      <h3 class="section-title">... del financiamiento</h3>
-      <div class="grid-2 gap-4">
-        <div class="result-item"><span>Saldo a financiar</span><span class="value">{{ moneda }}{{ format(data.monto_financiado) }}</span></div>
-        <div class="result-item"><span>Monto del préstamo</span><span class="value">{{ moneda }}{{ format(data.monto_del_prestamo) }}</span></div>
-        <div class="result-item"><span>N° Cuotas por Año</span><span class="value">{{ format(data.dias_por_anio / data.frecuencia_pago_dias) }}</span></div>
-        <div class="result-item"><span>N° Total de Cuotas</span><span class="value">{{ data.cronograma.length }}</span></div>
+      <!-- Tarjetas Hero (KPIs Principales) -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <i class="fas fa-money-check-alt kpi-icon"></i>
+          <h4>Monto del Préstamo</h4>
+          <span class="kpi-value">{{ moneda }}{{ format(data.monto_del_prestamo) }}</span>
+        </div>
+        <div class="kpi-card primary-card">
+          <i class="fas fa-calendar-alt kpi-icon"></i>
+          <h4>Cuota Referencial</h4>
+          <span class="kpi-value">{{ moneda }}{{ format(data.cuota_mensual_referencial) }}</span>
+        </div>
+        <div class="kpi-card purple-card">
+          <i class="fas fa-percentage kpi-icon"></i>
+          <h4>TCEA Anual</h4>
+          <span class="kpi-value">{{ format(data.TCEA * 100) }}%</span>
+        </div>
+        <div class="kpi-card" :class="data.VAN >= 0 ? 'green-card' : 'red-card'">
+          <i class="fas fa-chart-pie kpi-icon"></i>
+          <h4>VAN (Valor Actual Neto)</h4>
+          <span class="kpi-value">{{ moneda }}{{ format(data.VAN) }}</span>
+        </div>
       </div>
 
-      <!-- Agrupación 2: De los costes/gastos periódicos -->
-      <h3 class="section-title mt-4">... de los costes/gastos periódicos</h3>
-      <div class="grid-2 gap-4">
-        <div class="result-item"><span>% Seguro desgravamen per.</span><span class="value">{{ format(data.seguro_desgravamen * 100) }}%</span></div>
-        <div class="result-item"><span>Seguro riesgo</span><span class="value">{{ moneda }}{{ format(data.seguro_vehicular_periodo) }}</span></div>
-      </div>
-
-      <!-- Agrupación 3: Totales -->
-      <h3 class="section-title mt-4">... totales por ...</h3>
-      <div class="grid-2 gap-4">
-        <div class="result-item"><span>Intereses</span><span class="value">{{ moneda }}{{ format(data.totales?.interes) }}</span></div>
-        <div class="result-item"><span>Amortización del capital</span><span class="value">{{ moneda }}{{ format(data.totales?.amortizacion) }}</span></div>
-        <div class="result-item"><span>Seguro de desgravamen</span><span class="value">{{ moneda }}{{ format(data.totales?.seguro_desgravamen) }}</span></div>
-        <div class="result-item"><span>Seguro contra todo riesgo</span><span class="value">{{ moneda }}{{ format(data.totales?.seguro_vehicular) }}</span></div>
-        <div class="result-item"><span>Comisiones periódicas</span><span class="value">{{ moneda }}{{ format(data.totales?.comisiones) }}</span></div>
-        <div class="result-item"><span>Portes / Gastos de adm.</span><span class="value">{{ moneda }}{{ format(data.totales?.portes_gastos) }}</span></div>
-      </div>
-
-      <!-- Agrupación 4: Indicadores de Rentabilidad -->
-      <h3 class="section-title mt-4">... de Indicadores de Rentabilidad</h3>
-      <div class="grid-2 gap-4">
-        <div class="result-item highlight"><span>Tasa de descuento</span><span class="value">{{ format(data.TEP_COK * 100) }}%</span></div>
-        <div class="result-item highlight"><span>TIR de la operación</span><span class="value">{{ format(data.TIR_periodo * 100) }}%</span></div>
-        <div class="result-item highlight"><span>TCEA de la operación</span><span class="value">{{ format(data.TCEA * 100) }}%</span></div>
-        <div class="result-item highlight"><span>VAN operación</span><span class="value">{{ moneda }}{{ format(data.VAN) }}</span></div>
+      <!-- Resumen Secundario -->
+      <div class="summary-grid mt-4">
+        <div class="summary-box">
+          <h4><i class="fas fa-info-circle"></i> Condiciones del Préstamo</h4>
+          <ul>
+            <li><strong>Saldo a Financiar:</strong> {{ moneda }}{{ format(data.monto_financiado) }}</li>
+            <li><strong>Total de Cuotas:</strong> {{ data.cronograma.length }}</li>
+            <li><strong>Cuotas por Año:</strong> {{ format(data.dias_por_anio / data.frecuencia_pago_dias) }}</li>
+            <li><strong>Tasa de Descuento:</strong> {{ format(data.TEP_COK * 100) }}%</li>
+            <li><strong>TIR de Operación:</strong> {{ format(data.TIR_periodo * 100) }}%</li>
+          </ul>
+        </div>
+        
+        <div class="summary-box">
+          <h4><i class="fas fa-receipt"></i> Desglose Total a Pagar</h4>
+          <ul>
+            <li><strong>Intereses:</strong> {{ moneda }}{{ format(data.totales?.interes) }}</li>
+            <li><strong>Amortización del Capital:</strong> {{ moneda }}{{ format(data.totales?.amortizacion) }}</li>
+            <li><strong>Seguros (Desgravamen + Riesgo):</strong> {{ moneda }}{{ format(data.totales?.seguro_desgravamen + data.totales?.seguro_vehicular) }}</li>
+            <li><strong>Portes y Comisiones:</strong> {{ moneda }}{{ format(data.totales?.comisiones + data.totales?.portes_gastos) }}</li>
+          </ul>
+        </div>
       </div>
 
       <div class="mt-4 text-center">
@@ -221,4 +233,24 @@ const format = (num) => Number(num || 0).toFixed(2);
 .info-grid { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .photo-container { width: 250px; height: 150px; overflow: hidden; border-radius: 8px; border: 1px solid var(--glass-border); }
 .car-photo { width: 100%; height: 100%; object-fit: cover; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+.kpi-card { background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border); text-align: center; transition: transform 0.3s ease; }
+.kpi-card:hover { transform: translateY(-5px); }
+.kpi-icon { font-size: 2rem; margin-bottom: 1rem; opacity: 0.8; }
+.kpi-card h4 { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 500; }
+.kpi-value { font-size: 1.8rem; font-weight: 700; display: block; }
+.primary-card { background: rgba(0, 198, 255, 0.1); border-color: rgba(0, 198, 255, 0.3); }
+.primary-card .kpi-value, .primary-card .kpi-icon { color: var(--accent-cyan); }
+.purple-card { background: rgba(177, 78, 255, 0.1); border-color: rgba(177, 78, 255, 0.3); }
+.purple-card .kpi-value, .purple-card .kpi-icon { color: #b14eff; }
+.green-card { background: rgba(82, 196, 26, 0.1); border-color: rgba(82, 196, 26, 0.3); }
+.green-card .kpi-value, .green-card .kpi-icon { color: #52c41a; }
+.red-card { background: rgba(255, 77, 79, 0.1); border-color: rgba(255, 77, 79, 0.3); }
+.red-card .kpi-value, .red-card .kpi-icon { color: #ff4d4f; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+.summary-box { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 1.5rem; }
+.summary-box h4 { margin-bottom: 1rem; color: var(--accent-blue); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; }
+.summary-box ul { list-style: none; padding: 0; margin: 0; }
+.summary-box li { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.95rem; }
+.summary-box li strong { color: var(--text-secondary); }
 </style>
