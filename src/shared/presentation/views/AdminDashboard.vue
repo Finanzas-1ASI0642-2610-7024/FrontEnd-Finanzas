@@ -239,8 +239,8 @@ onMounted(fetchData);
 /* Buscador */
 .card-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
 .search-input-wrapper { position: relative; width: 100%; max-width: 350px; }
-.search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
-.search-input { width: 100%; padding: 0.7rem 1rem 0.7rem 2.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; color: white; font-size: 0.9rem; transition: border-color 0.3s; }
+.search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); pointer-events: none; }
+.search-input { margin: 0; width: 100%; padding: 0.7rem 1rem 0.7rem 2.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; color: white; font-size: 0.9rem; transition: border-color 0.3s; }
 .search-input:focus { outline: none; border-color: var(--accent-cyan); }
 
 /* Tablas */
