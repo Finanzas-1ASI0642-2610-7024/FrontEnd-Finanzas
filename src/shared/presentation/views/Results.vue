@@ -22,7 +22,8 @@
           <p><strong>Precio Catálogo:</strong> {{ vehiculo.moneda === 'USD' ? '$' : 'S/' }}{{ Number(vehiculo.precio).toFixed(2) }} 
              <span v-if="tipo_cambio != 1" class="text-secondary">(T.C. aplicado: {{ tipo_cambio }})</span>
           </p>
-          <p><strong>Costos Notariales:</strong> {{ moneda }}{{ format(costos_notariales) }} | <strong>Costos Registrales:</strong> {{ moneda }}{{ format(costos_registrales) }}</p>
+          <p><strong>Costos Notariales/Registrales:</strong> {{ moneda }}{{ format(costos_notariales + costos_registrales) }} | <strong>Tasación:</strong> {{ moneda }}{{ format(tasacion) }}</p>
+          <p><strong>Comisiones (Estudio/Activación):</strong> {{ moneda }}{{ format(comision_estudio + comision_activacion) }}</p>
         </div>
         <div v-if="vehiculo.imagen" class="photo-container">
           <img :src="vehiculo.imagen" alt="Foto del vehículo" class="car-photo" />
@@ -102,6 +103,9 @@ const tipo_cambio = ref(1);
 const costos_iniciales_totales = ref(0);
 const costos_notariales = ref(0);
 const costos_registrales = ref(0);
+const tasacion = ref(0);
+const comision_estudio = ref(0);
+const comision_activacion = ref(0);
 
 onMounted(async () => {
   creditId.value = route.query.id;
@@ -117,10 +121,18 @@ onMounted(async () => {
       
       const cn = Number(c.CostosAdicionale?.costos_notariales) || 0;
       const cr = Number(c.CostosAdicionale?.costos_registrales) || 0;
-      const com = Number(c.CostosAdicionale?.comisiones) || 0;
+      const tas = Number(c.CostosAdicionale?.tasacion) || 0;
+      const c_est = Number(c.CostosAdicionale?.comision_estudio) || 0;
+      const c_act = Number(c.CostosAdicionale?.comision_activacion) || 0;
+      const com = Number(c.CostosAdicionale?.comisiones) || 0; // esta es periódica, la sumamos a la inicial si el usuario la usaba así, pero ahora es periódica.
+      // Corrección: Los gastos iniciales son los que se pagan en Día 0.
       costos_notariales.value = cn;
       costos_registrales.value = cr;
-      costos_iniciales_totales.value = cn + cr + com;
+      tasacion.value = tas;
+      comision_estudio.value = c_est;
+      comision_activacion.value = c_act;
+      // La comision normal ahora se asume periódica o del día 0 según cómo la usen, el backend asume ambas. Restamos comisiones en día 0 en backend, así que lo sumamos aquí.
+      costos_iniciales_totales.value = cn + cr + tas + c_est + c_act + com;
 
       data.value = {
         monto_financiado: c.monto_financiado,

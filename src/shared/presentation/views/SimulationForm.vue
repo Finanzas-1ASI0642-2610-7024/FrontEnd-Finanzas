@@ -44,24 +44,30 @@
             <small class="text-secondary">El precio del vehículo será convertido a la moneda del crédito usando el Tipo de Cambio indicado (Ej. 3.80 o 1.00 si no aplica).</small>
         </div>
         
-        <div class="form-group"><label>Cuota Inicial ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.cuota_inicial" required /></div>
+        <div class="form-group"><label>% Cuota Inicial (Ej: 20)</label><input type="number" step="0.01" v-model.number="form.cuota_inicial_porcentaje" required /></div>
         <div class="form-group"><label>Cuota Final (Balloon) %</label><input type="number" step="0.01" v-model.number="form.cuota_final_porcentaje" required /></div>
         <div class="form-group">
-          <label>Plazo (meses)</label>
-          <select v-model.number="form.plazo_meses"><option value="24">24</option><option value="36">36</option></select>
-        </div>
-        <div class="form-group">
           <label>Tipo de Tasa</label>
-          <select v-model="form.tipo_tasa"><option value="TEA">TEA</option><option value="TNA">TNA</option></select>
+          <select v-model="form.tipo_tasa" class="select-full">
+            <option value="TEA">Tasa Efectiva Anual (TEA)</option>
+            <option value="TNA">Tasa Nominal Anual (TNA)</option>
+          </select>
         </div>
-        <div class="form-group"><label>Tasa de Interés (Ej: 0.15 para 15%)</label><input type="number" step="0.0001" v-model.number="form.tasa_interes" required /></div>
+        <div class="form-group"><label>Valor de Tasa (Ej: 0.15 para 15%)</label><input type="number" step="0.0001" v-model.number="form.tasa_interes" required /></div>
         <div class="form-group" v-if="form.tipo_tasa === 'TNA'">
           <label>Capitalización</label>
-          <select v-model="form.capitalizacion"><option value="Diaria">Diaria</option><option value="Mensual">Mensual</option></select>
+          <select v-model="form.capitalizacion" class="select-full">
+            <option value="Diaria">Diaria</option>
+            <option value="Mensual">Mensual</option>
+          </select>
         </div>
+        <div class="form-group"><label>N° de Años (Ej: 12)</label><input type="number" v-model.number="form.numero_anios" required /></div>
+        <div class="form-group"><label>Frecuencia de Pago en días (Ej: 90)</label><input type="number" v-model.number="form.frecuencia_pago_dias" required /></div>
+        <div class="form-group"><label>N° de Días por Año (360 o 365)</label><input type="number" v-model.number="form.dias_por_anio" required /></div>
+        
         <div class="form-group">
           <label>Tipo de Gracia</label>
-          <select v-model="form.tipo_gracia"><option value="Ninguno">Ninguno</option><option value="Parcial">Parcial</option><option value="Total">Total</option></select>
+          <select v-model="form.tipo_gracia" class="select-full"><option value="Ninguno">Ninguno</option><option value="Parcial">Parcial</option><option value="Total">Total</option></select>
         </div>
         <div class="form-group" v-if="form.tipo_gracia !== 'Ninguno'"><label>Periodos de Gracia</label><input type="number" v-model.number="form.periodos_gracia" /></div>
         
@@ -70,13 +76,21 @@
 
         <!-- Seguros y Comisiones -->
         <h3 class="section-title">Costos Iniciales (Día 0)</h3>
+        <div class="form-group"><label>Tasación ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.tasacion" /></div>
+        <div class="form-group"><label>Comisión de Estudio ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.comision_estudio" /></div>
+        <div class="form-group"><label>Comisión Activación ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.comision_activacion" /></div>
         <div class="form-group"><label>Costos Notariales ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.costos_notariales" /></div>
         <div class="form-group"><label>Costos Registrales ({{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.costos_registrales" /></div>
 
         <h3 class="section-title">Seguros y Comisiones Periódicas</h3>
-        <div class="form-group"><label>Seguro Desgravamen (mensual, Ej: 0.0005)</label><input type="number" step="0.00001" v-model.number="form.seguro_desgravamen" /></div>
-        <div class="form-group"><label>Seguro Vehicular (anual, Ej: 0.05)</label><input type="number" step="0.0001" v-model.number="form.seguro_vehicular_anual" /></div>
-        <div class="form-group"><label>Comisiones (Monto fijo en {{ form.tipo_moneda === 'USD' ? '$' : 'S/' }})</label><input type="number" step="0.01" v-model.number="form.comisiones" /></div>
+        <div class="form-group"><label>Portes (Fijo por cuota)</label><input type="number" step="0.01" v-model.number="form.portes" /></div>
+        <div class="form-group"><label>Gastos de Administración (Fijo por cuota)</label><input type="number" step="0.01" v-model.number="form.gastos_administracion" /></div>
+        <div class="form-group"><label>Comisión Periódica (Fijo por cuota)</label><input type="number" step="0.01" v-model.number="form.comisiones" /></div>
+        <div class="form-group"><label>% de Seguro Desgravamen (por cuota, Ej: 0.00049)</label><input type="number" step="0.00001" v-model.number="form.seguro_desgravamen" /></div>
+        <div class="form-group"><label>% de Seguro Riesgo (anual, Ej: 0.004)</label><input type="number" step="0.0001" v-model.number="form.seguro_vehicular_anual" /></div>
+        
+        <h3 class="section-title">Costo de Oportunidad</h3>
+        <div class="form-group"><label>Tasa de Descuento (COK) Ej: 0.25 para 25%</label><input type="number" step="0.0001" v-model.number="form.tasa_descuento_COK" required /></div>
 
         <div class="form-actions">
           <button type="submit" class="btn-primary" :disabled="loading">{{ loading ? 'Calculando...' : 'Calcular y Guardar' }}</button>
@@ -103,11 +117,14 @@ const form = reactive({
   id: null,
   ID_Cliente: '', ID_Vehiculo: '',
   tipo_moneda: 'PEN', tipo_cambio: 1.0000,
-  cuota_inicial: 4000, cuota_final_porcentaje: 30,
+  cuota_inicial_porcentaje: 20, cuota_final_porcentaje: 30,
   tipo_tasa: 'TEA', tasa_interes: 0.15, capitalizacion: 'Mensual',
-  plazo_meses: 36, tipo_gracia: 'Ninguno', periodos_gracia: 0,
+  numero_anios: 1, frecuencia_pago_dias: 30, dias_por_anio: 360,
+  tipo_gracia: 'Ninguno', periodos_gracia: 0,
+  tasacion: 0, comision_estudio: 0, comision_activacion: 0,
   costos_notariales: 0, costos_registrales: 0,
-  seguro_desgravamen: 0.0005, seguro_vehicular_anual: 0.05, comisiones: 150,
+  portes: 0, gastos_administracion: 0,
+  seguro_desgravamen: 0.0005, seguro_vehicular_anual: 0.05, comisiones: 0,
   tasa_descuento_COK: 0.10
 });
 
@@ -129,17 +146,18 @@ onMounted(async () => {
       const data = res.data.data;
       
       form.id = data.id;
-      form.ID_Cliente = data.Cliente?.id || '';
-      form.ID_Vehiculo = data.Vehiculo?.id || '';
-      
-      form.cuota_inicial = parseFloat(data.cuota_inicial);
+      form.ID_Cliente = data.ID_Cliente;
+      form.ID_Vehiculo = data.ID_Vehiculo;
+      form.cuota_inicial_porcentaje = parseFloat(data.cuota_inicial_porcentaje) || 20;
       form.cuota_final_porcentaje = parseFloat(data.cuota_final_porcentaje);
       form.tipo_moneda = data.tipo_moneda || 'PEN';
       form.tipo_cambio = parseFloat(data.tipo_cambio) || 1.0000;
       form.tipo_tasa = data.tipo_tasa;
       form.tasa_interes = parseFloat(data.tasa_interes);
       form.capitalizacion = data.capitalizacion;
-      form.plazo_meses = data.plazo_meses;
+      form.numero_anios = data.numero_anios || 1;
+      form.frecuencia_pago_dias = data.frecuencia_pago_dias || 30;
+      form.dias_por_anio = data.dias_por_anio || 360;
       form.tipo_gracia = data.tipo_gracia;
       form.periodos_gracia = data.periodos_gracia;
       
@@ -148,6 +166,12 @@ onMounted(async () => {
       form.comisiones = parseFloat(data.CostosAdicionale?.comisiones) || 0;
       form.costos_notariales = parseFloat(data.CostosAdicionale?.costos_notariales) || 0;
       form.costos_registrales = parseFloat(data.CostosAdicionale?.costos_registrales) || 0;
+      form.tasacion = parseFloat(data.CostosAdicionale?.tasacion) || 0;
+      form.comision_estudio = parseFloat(data.CostosAdicionale?.comision_estudio) || 0;
+      form.comision_activacion = parseFloat(data.CostosAdicionale?.comision_activacion) || 0;
+      form.portes = parseFloat(data.CostosAdicionale?.portes) || 0;
+      form.gastos_administracion = parseFloat(data.CostosAdicionale?.gastos_administracion) || 0;
+      form.tasa_descuento_COK = parseFloat(data.tasa_descuento_COK) || 0.10;
     } catch(e) {
       console.error(e);
     }
